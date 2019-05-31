@@ -1,8 +1,9 @@
 ﻿using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
-namespace UnityEngine.XR.ARFoundation
+namespace UnityEngine.XR.Mock
 {
     /// <summary>
     /// Generates a mesh for an <see cref="ARPlane"/>.

@@ -1,7 +1,6 @@
 {
     "name": "Unity.XR.Mock",
     "references": [
-        "Unity.XR.ARExtensions",
         "Unity.XR.ARFoundation",
         "Unity.XR.ARSubsystems"
     ],
