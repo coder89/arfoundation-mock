@@ -21,6 +21,8 @@ namespace UnityEngine.XR.Mock
 
         class Provider : IProvider
         {
+            private int counter = 0;
+
             public Provider()
             { }
 
@@ -32,13 +34,27 @@ namespace UnityEngine.XR.Mock
 
             public override Promise<SessionAvailability> GetAvailabilityAsync() => new SessionAvailabilityPromise();
 
-            public override void Update(XRSessionUpdateParams updateParams) { }
+            public override void Update(XRSessionUpdateParams updateParams)
+            {
+                if (this.trackingState == TrackingState.Limited)
+                {
+                    --this.counter;
+                    if (this.counter <= 0)
+                    {
+                        NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
+                    }
+                }
+            }
 
             public override void Destroy() { }
 
             public override void Reset() { }
 
-            public override void OnApplicationPause() { }
+            public override void OnApplicationPause()
+            {
+                NativeApi.UnityXRMock_setTrackingState(TrackingState.Limited);
+                this.counter = 120;
+            }
 
             public override void OnApplicationResume() { }
 
