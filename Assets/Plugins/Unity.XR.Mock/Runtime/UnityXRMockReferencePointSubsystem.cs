@@ -21,7 +21,10 @@ namespace UnityEngine.XR.Mock
 
             public override void Stop() { }
 
-            public override void Destroy() { }
+            public override void Destroy()
+            {
+                NativeApi.UnityXRMock_referencePointReset();
+            }
 
             public override unsafe TrackableChanges<XRReferencePoint> GetChanges(
                 XRReferencePoint defaultReferencePoint,

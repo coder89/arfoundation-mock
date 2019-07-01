@@ -233,6 +233,12 @@ namespace UnityEngine.XR.Mock
             s_removedPlanes.Clear();
         }
 
+        public static void UnityXRMock_planesReset()
+        {
+            UnityXRMock_consumedPlaneChanges();
+            s_planes.Clear();
+        }
+
         public static IDictionary<TrackableId, PlaneInfo> planes => s_planes;
         public static IReadOnlyCollection<PlaneInfo> addedPlanes => s_addedPlanes.Values;
         public static IReadOnlyCollection<PlaneInfo> updatedPlanes => s_updatedPlanes.Values;
@@ -366,6 +372,12 @@ namespace UnityEngine.XR.Mock
             s_addedRefPoints.Clear();
             s_updatedRefPoints.Clear();
             s_removedRefPoints.Clear();
+        }
+
+        public static void UnityXRMock_referencePointReset()
+        {
+            UnityXRMock_consumedReferencePointChanges();
+            s_refPoints.Clear();
         }
 
         public static IDictionary<TrackableId, RefPointInfo> refPoints => s_refPoints;

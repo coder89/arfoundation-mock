@@ -20,6 +20,11 @@ namespace UnityEngine.XR.Mock
 
             public override void Stop() { }
 
+            public override void Destroy()
+            {
+                NativeApi.UnityXRMock_planesReset();
+            }
+
             public override void GetBoundary(
                 TrackableId trackableId,
                 Allocator allocator,
@@ -58,8 +63,6 @@ namespace UnityEngine.XR.Mock
                     NativeApi.UnityXRMock_consumedPlaneChanges();
                 }
             }
-
-            public override void Destroy() { }
         }
 
         internal static void RegisterDescriptor(XRPlaneSubsystemDescriptor descriptor, Func<XRPlaneSubsystem, TrackableId, TrackingState> getTrackingState)
