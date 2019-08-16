@@ -43,6 +43,12 @@
             transform.position += direction * (Time.deltaTime * m_MoveSpeed);
         }
 
+        void Awake()
+        {
+            this.transform.position = Camera.main.transform.position;
+            this.transform.rotation = Camera.main.transform.rotation;
+        }
+
         void Update()
         {
             int mouseButton = (int)m_LookMouseButton;

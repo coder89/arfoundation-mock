@@ -1,6 +1,7 @@
 ﻿using AOT;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine.XR.ARSubsystems;
@@ -88,6 +89,22 @@ namespace UnityEngine.XR.Mock
             LogNotImplemented();
         }
         #endregion
+
+        public static TrackableId UnityXRMock_createTrackableId(string trackableId)
+        {
+            if (!string.IsNullOrWhiteSpace(trackableId))
+            {
+                string[] bytes = trackableId.Split('-');
+                if (bytes.Length == 2)
+                {
+                    ulong subId1 = Convert.ToUInt64(bytes[0], 16);
+                    ulong subId2 = Convert.ToUInt64(bytes[1], 16);
+                    return new TrackableId(subId1, subId2);
+                }
+            }
+
+            return TrackableId.invalidId;
+        }
 
         public static TrackableId UnityXRMock_createTrackableId(Guid guid)
         {
@@ -219,11 +236,37 @@ namespace UnityEngine.XR.Mock
         {
             if (s_planes.ContainsKey(planeId))
             {
-                s_removedPlanes[planeId] = s_planes[planeId];
+                if (!s_addedPlanes.Remove(planeId))
+                {
+                    s_removedPlanes[planeId] = s_planes[planeId];
+                }
+
                 s_planes.Remove(planeId);
-                s_addedPlanes.Remove(planeId);
                 s_updatedPlanes.Remove(planeId);
             }
+        }
+
+        public static void UnityXRMock_subsumedPlane(TrackableId planeId, TrackableId subsumedById)
+        {
+            if (!s_planes.ContainsKey(planeId) || s_addedPlanes.ContainsKey(planeId))
+            {
+                if (!s_planes.ContainsKey(planeId))
+                {
+                    s_planes[planeId] = new PlaneInfo()
+                    {
+                        id = planeId
+                    };
+                }
+
+                s_addedPlanes[planeId] = s_planes[planeId];
+            }
+            else
+            {
+                s_updatedPlanes[planeId] = s_planes[planeId];
+            }
+
+            var planeInfo = s_planes[planeId];
+            planeInfo.subsumedById = subsumedById;
         }
 
         public static void UnityXRMock_consumedPlaneChanges()
@@ -240,9 +283,9 @@ namespace UnityEngine.XR.Mock
         }
 
         public static IDictionary<TrackableId, PlaneInfo> planes => s_planes;
-        public static IReadOnlyCollection<PlaneInfo> addedPlanes => s_addedPlanes.Values;
-        public static IReadOnlyCollection<PlaneInfo> updatedPlanes => s_updatedPlanes.Values;
-        public static IReadOnlyCollection<PlaneInfo> removedPlanes => s_removedPlanes.Values;
+        public static IEnumerable<PlaneInfo> addedPlanes => s_addedPlanes.Values;
+        public static IEnumerable<PlaneInfo> updatedPlanes => s_updatedPlanes.Values.OrderBy(m => m.subsumedById != TrackableId.invalidId);
+        public static IEnumerable<PlaneInfo> removedPlanes => s_removedPlanes.Values;
 
         #endregion
 
@@ -252,36 +295,25 @@ namespace UnityEngine.XR.Mock
             // TODO LogNotImplemented();
         }
 
-        public static void UnityXRMock_setProjectionMatrix(
-            Matrix4x4 projectionMatrix, Matrix4x4 inverseProjectionMatrix, bool hasValue)
+        #region CameraApi.projectionMatrix
+
+        private static Matrix4x4? projectionMatrix;
+
+        public static Matrix4x4? UnityXRMock_getProjectionMatrix() => projectionMatrix;
+
+        public static void UnityXRMock_setProjectionMatrix(Matrix4x4 projectionMatrix, Matrix4x4 inverseProjectionMatrix, bool hasValue)
         {
             if (hasValue)
             {
-                Camera.main.projectionMatrix = projectionMatrix;
+                NativeApi.projectionMatrix = projectionMatrix;
             }
             else
             {
-                Camera.main.ResetProjectionMatrix();
+                NativeApi.projectionMatrix = null;
             }
         }
 
-        public static void UnityXRMock_setDisplayMatrix(
-             Matrix4x4 displayMatrix, bool hasValue)
-        {
-            LogNotImplemented();
-        }
-
-        public static void UnityXRMock_setAverageBrightness(
-            float averageBrightness, bool hasValue)
-        {
-            LogNotImplemented();
-        }
-
-        public static void UnityXRMock_setAverageColorTemperature(
-            float averageColorTemperature, bool hasValue)
-        {
-            LogNotImplemented();
-        }
+        #endregion
 
         private static Func<TrackableId> s_trackableIdGenerator;
 
@@ -315,8 +347,7 @@ namespace UnityEngine.XR.Mock
             }
         }
 
-        public static TrackableId UnityXRMock_attachReferencePoint(
-            TrackableId trackableId, Pose pose)
+        public static TrackableId UnityXRMock_attachReferencePoint(TrackableId trackableId, Pose pose)
         {
             if (trackableId == TrackableId.invalidId)
             {
@@ -346,8 +377,7 @@ namespace UnityEngine.XR.Mock
             return refPointInfo.id;
         }
 
-        public static void UnityXRMock_updateReferencePoint(
-            TrackableId trackableId, Pose pose, TrackingState trackingState)
+        public static void UnityXRMock_updateReferencePoint(TrackableId trackableId, Pose pose, TrackingState trackingState)
         {
             var refPointInfo = s_refPoints[trackableId];
             refPointInfo.pose = pose;
@@ -355,14 +385,16 @@ namespace UnityEngine.XR.Mock
             s_updatedRefPoints[trackableId] = refPointInfo;
         }
 
-        public static void UnityXRMock_removeReferencePoint(
-            TrackableId trackableId)
+        public static void UnityXRMock_removeReferencePoint(TrackableId trackableId)
         {
             if (s_refPoints.ContainsKey(trackableId))
             {
-                s_removedRefPoints[trackableId] = s_refPoints[trackableId];
+                if (!s_addedRefPoints.Remove(trackableId))
+                {
+                    s_removedRefPoints[trackableId] = s_refPoints[trackableId];
+                }
+
                 s_refPoints.Remove(trackableId);
-                s_addedRefPoints.Remove(trackableId);
                 s_updatedRefPoints.Remove(trackableId);
             }
         }

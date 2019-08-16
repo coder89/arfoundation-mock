@@ -2,10 +2,12 @@ namespace UnityEngine.XR.Mock
 {
     public static class CameraApi
     {
-        public static bool permissionGranted { get; set; }
+        public static bool permissionGranted { get; set; } = true;
 
         public static Matrix4x4? projectionMatrix
         {
+            get => NativeApi.UnityXRMock_getProjectionMatrix();
+
             set
             {
                 if (value.HasValue)
@@ -21,33 +23,18 @@ namespace UnityEngine.XR.Mock
             }
         }
 
-        public static Matrix4x4? displayMatrix
-        {
-            set
-            {
-                NativeApi.UnityXRMock_setDisplayMatrix(
-                   value.HasValue ? value.Value : Matrix4x4.identity, value.HasValue);
-            }
-        }
+        public static Matrix4x4? displayMatrix { get; set; }
 
-        public static float? averageBrightness
-        {
-            set
-            {
-                NativeApi.UnityXRMock_setAverageBrightness(
-                    value.HasValue ? value.Value : 0f, value.HasValue);
-            }
-        }
+        public static float? averageBrightness { get; set; }
 
-        public static float? averageColorTemperature
-        {
-            set
-            {
-                NativeApi.UnityXRMock_setAverageColorTemperature(
-                    value.HasValue ? value.Value : 0f, value.HasValue);
-            }
-        }
+        public static float? averageColorTemperature { get; set; }
 
         public static Color? colorCorrection { internal get; set; }
+
+        public static long? timestamp { get; set; }
+
+        public static Vector2? screenSize { get; set; }
+
+        public static ScreenOrientation? screenOrientation { get; set; }
     }
 }
