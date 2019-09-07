@@ -25,6 +25,7 @@ namespace UnityEngine.XR.Mock.Example
 
         void OnRayHit(ARRaycastHit hit)
         {
+            Debug.Log("HEY");
             if (!Input.GetMouseButtonDown(0))
                 return;
 

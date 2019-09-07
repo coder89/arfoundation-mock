@@ -8,7 +8,7 @@ namespace UnityEngine.XR.Mock
     {
         public static TrackableId Add(Pose pose, Vector2 center, Vector2 size, TrackingState trackingState = TrackingState.Tracking)
         {
-            var planeId = NativeApi.NewTrackableId();
+            var planeId = NativeApi.UnityXRMock_createTrackableId(Guid.NewGuid());
             s_TrackingStates[planeId] = trackingState;
             NativeApi.UnityXRMock_setPlaneData(planeId, pose, center, size, null, 0, trackingState);
             return planeId;
@@ -25,37 +25,9 @@ namespace UnityEngine.XR.Mock
                 throw new ArgumentNullException("boundaryPoints");
 
             var planeId = NativeApi.UnityXRMock_createTrackableId(Guid.NewGuid());
-            return AddOrUpdate(planeId, TrackableId.invalidId, pose, boundaryPoints, trackingState);
-        }
-
-        public static TrackableId AddOrUpdate(TrackableId planeId, TrackableId subsumedById, Pose pose, Vector2[] boundaryPoints, TrackingState trackingState = TrackingState.Tracking)
-        {
-            if (boundaryPoints == null)
-                throw new ArgumentNullException("boundaryPoints");
-
-            if (planeId == TrackableId.invalidId)
-            {
-                planeId = NativeApi.NewTrackableId();
-            }
-
-            if (!s_TrackingStates.ContainsKey(planeId))
-            {
-                s_TrackingStates[planeId] = trackingState;
-            }
-
+            s_TrackingStates[planeId] = trackingState;
             SetPlaneData(planeId, pose, boundaryPoints);
-
-            if (subsumedById != TrackableId.invalidId)
-            {
-                NativeApi.UnityXRMock_subsumedPlane(planeId, subsumedById);
-            }
-
             return planeId;
-        }
-
-        public static void Merge(TrackableId planeId, TrackableId subsumedById)
-        {
-            NativeApi.UnityXRMock_subsumedPlane(planeId, subsumedById);
         }
 
         public static void Update(TrackableId planeId, Pose pose, Vector2[] boundaryPoints)
