@@ -396,6 +396,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 545842490}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &629935841 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7672778399354399251, guid: 7549d757166f863418e86fb69b8c6092,
+    type: 3}
+  m_PrefabInstance: {fileID: 545842490}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,6 +629,7 @@ GameObject:
   - component: {fileID: 874057866}
   - component: {fileID: 874057864}
   - component: {fileID: 874057863}
+  - component: {fileID: 874057865}
   m_Layer: 0
   m_Name: Mock ReferencePoints
   m_TagString: Untagged
@@ -675,6 +682,19 @@ MonoBehaviour:
   m_PlanePolygon: 1
   m_PlaneBounds: 0
   m_PlaneInfinte: 0
+--- !u!114 &874057865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874057861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21321fd17d147884e88a6d24356662dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PlacedPrefab: {fileID: 629935841}
 --- !u!114 &874057866
 MonoBehaviour:
   m_ObjectHideFlags: 0
