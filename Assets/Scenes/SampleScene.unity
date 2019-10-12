@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -266,7 +266,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 247338359}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d3511d1a5e938469af3fe666847ff9, type: 3}
+  m_Script: {fileID: 11500000, guid: 59ac1eb147624a244b66334f65199ee7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_TrackingState: 2
@@ -310,7 +310,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 368486760}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45eee1b103ce721498a9768221563cc3, type: 3}
+  m_Script: {fileID: 11500000, guid: 52e295bc3f57ba34b8c3a230bc6d11b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Radius: 5
@@ -332,41 +332,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Mock Plane 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
         type: 3}
@@ -393,12 +358,6 @@ PrefabInstance:
 --- !u!4 &545842491 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
-    type: 3}
-  m_PrefabInstance: {fileID: 545842490}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &629935841 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7672778399354399251, guid: 7549d757166f863418e86fb69b8c6092,
     type: 3}
   m_PrefabInstance: {fileID: 545842490}
   m_PrefabAsset: {fileID: 0}
@@ -592,7 +551,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 855304132}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d347b330e55989e4392d9aa171333e7d, type: 3}
+  m_Script: {fileID: 11500000, guid: a39404920e88d19469c518e0611ed720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ARCamera: {fileID: 1705326509}
@@ -605,7 +564,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 855304132}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6716eb254a121434381e0933a2ae6a9d, type: 3}
+  m_Script: {fileID: 11500000, guid: 46d064a28e58d384d98e0aa7e45cd50e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_MoveSpeed: 1
@@ -660,11 +619,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 874057861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5ec1e820cbf33947b6cc3f5a3c453f5, type: 3}
+  m_Script: {fileID: 11500000, guid: 81500f3393ea4db448ac572ce014aa28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ARSessionOrigin: {fileID: 83320052}
-  m_DistanceFromPlane: 0.1
+  m_ARRaycastManager: {fileID: 83320051}
+  m_PointCloud: 0
+  m_PlanePolygon: 1
+  m_PlaneBounds: 0
+  m_PlaneInfinte: 0
 --- !u!114 &874057864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -674,14 +636,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 874057861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0506abab8b6300c48aa53f331b9f7fcd, type: 3}
+  m_Script: {fileID: 11500000, guid: d9d9374e96691d34f85355e06b74428e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ARRaycastManager: {fileID: 83320051}
-  m_PointCloud: 0
-  m_PlanePolygon: 1
-  m_PlaneBounds: 0
-  m_PlaneInfinte: 0
+  m_ARSessionOrigin: {fileID: 83320052}
+  m_DistanceFromPlane: 0.1
 --- !u!114 &874057865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -691,10 +650,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 874057861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 21321fd17d147884e88a6d24356662dc, type: 3}
+  m_Script: {fileID: 11500000, guid: c28f000493c0d784385db230057a5713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PlacedPrefab: {fileID: 629935841}
+  m_Content: {fileID: 0}
+  m_SessionOrigin: {fileID: 83320052}
 --- !u!114 &874057866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -704,7 +664,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 874057861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1538e60af9fdc09468e706e27f76ecf4, type: 3}
+  m_Script: {fileID: 11500000, guid: a8d025a14034246489c7d3bbe4482c78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ReferencePointManager: {fileID: 83320049}

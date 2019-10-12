@@ -34,27 +34,27 @@ namespace UnityEngine.XR.Mock
                 UnsafeUtility.MemCpy(NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(newBoundary), boundaryPointer, boundary.Length * (long)UnsafeUtility.SizeOf<Vector2>());
                 boundary = newBoundary;
 #endif
-            if (!ARPlaneMeshGenerators.GenerateMesh(this.mesh, new Pose(this.transform.localPosition, this.transform.localRotation), boundary))
-                return;
+                if (!ARPlaneMeshGenerators.GenerateMesh(this.mesh, new Pose(this.transform.localPosition, this.transform.localRotation), boundary))
+                    return;
 
-            var lineRenderer = this.GetComponent<LineRenderer>();
-            if (lineRenderer != null)
-            {
-                lineRenderer.positionCount = boundary.Length;
-                for (int i = 0; i < boundary.Length; ++i)
+                var lineRenderer = this.GetComponent<LineRenderer>();
+                if (lineRenderer != null)
                 {
-                    var point2 = boundary[i];
-                    lineRenderer.SetPosition(i, new Vector3(point2.x, 0, point2.y));
+                    lineRenderer.positionCount = boundary.Length;
+                    for (int i = 0; i < boundary.Length; ++i)
+                    {
+                        var point2 = boundary[i];
+                        lineRenderer.SetPosition(i, new Vector3(point2.x, 0, point2.y));
+                    }
                 }
-            }
 
-            var meshFilter = this.GetComponent<MeshFilter>();
-            if (meshFilter != null)
-                meshFilter.sharedMesh = this.mesh;
+                var meshFilter = this.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                    meshFilter.sharedMesh = this.mesh;
 
-            var meshCollider = this.GetComponent<MeshCollider>();
-            if (meshCollider != null)
-                meshCollider.sharedMesh = this.mesh;
+                var meshCollider = this.GetComponent<MeshCollider>();
+                if (meshCollider != null)
+                    meshCollider.sharedMesh = this.mesh;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             }
             finally

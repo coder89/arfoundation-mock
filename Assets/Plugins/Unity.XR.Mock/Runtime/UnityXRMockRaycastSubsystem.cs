@@ -1,58 +1,178 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Unity.Collections;
-using UnityEngine.Experimental;
 using UnityEngine.XR.ARSubsystems;
-using UnityEngine;
-using UnityEditor;
 
 namespace UnityEngine.XR.Mock
 {
     public sealed class UnityXRMockRaycastSubsytem : XRRaycastSubsystem
     {
+        #region Constants
+
+        public const string ID = "UnityXRMock-Raycast";
+
+        #endregion
+
+        #region Fields
+
+        private bool isInitialized;
+        private XRRaycastSubsystem wrappedSubsystem;
+        private static XRRaycastSubsystemDescriptor originalDescriptor;
+
+        #endregion
+
+        #region Constructors
+
+        public UnityXRMockRaycastSubsytem()
+        {
+            this.Initialize();
+        }
+
+        #endregion
+
+        #region XRRaycastSubsystem
+
+        public override void Start()
+        {
+            if (this.wrappedSubsystem != null)
+            {
+                this.wrappedSubsystem.Start();
+            }
+
+            base.Start();
+        }
+
+        public override void Stop()
+        {
+            if (this.wrappedSubsystem != null)
+            {
+                this.wrappedSubsystem.Stop();
+            }
+
+            base.Stop();
+        }
+
+        //public override void Destroy()
+        //{
+        //    if (this.wrappedSubsystem != null)
+        //    {
+        //        this.wrappedSubsystem.Destroy();
+        //    }
+        //
+        //    base.Destroy();
+        //}
+
         protected override IProvider CreateProvider()
         {
-            return new Provider();
+            this.Initialize();
+            return this.wrappedSubsystem?.GetType()
+                                         .GetMethod(nameof(CreateProvider), BindingFlags.NonPublic | BindingFlags.Instance)
+                                         .Invoke(this.wrappedSubsystem, null) as IProvider ?? new Provider();
         }
 
-        class Provider : IProvider
+        #endregion
+
+        #region Internal methods
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        internal static void Register()
         {
-            public override void Start() { base.Start(); }
-
-            public override void Stop() { base.Stop(); }
-
-            public override void Destroy() { }
-
-            public override NativeArray<XRRaycastHit> Raycast(XRRaycastHit defaultRaycastHit, Ray ray,
-                                TrackableType trackableTypeMask, Allocator allocator)
-            {
-                var hits = new NativeArray<XRRaycastHit>();
-                return hits;
-            }
-
-            public override NativeArray<XRRaycastHit> Raycast(XRRaycastHit defaultRaycastHit, Vector2 screenPoint,
-                                TrackableType trackableTypeMask, Allocator allocator)
-            {
-                var hits = new NativeArray<XRRaycastHit>();
-                return hits;
-            }
+            var descriptor = GetSubsystemDescriptor();
+            RegisterDescriptor(descriptor);
         }
 
-        internal static void RegisterDescriptor(XRRaycastSubsystemDescriptor descriptor)
+        #endregion
+
+        #region Private methods
+
+        private void Initialize()
         {
-            if (descriptor != null)
+            if (this.isInitialized)
             {
-                descriptor.subsystemImplementationType = typeof(UnityXRMockRaycastSubsytem);
+                return;
+            }
+
+            if (!UnityXRMockActivator.Active)
+            {
+                if (originalDescriptor == null)
+                {
+                    originalDescriptor = GetSubsystemDescriptor();
+                }
+
+                this.wrappedSubsystem = originalDescriptor?.Create();
+            }
+
+            this.isInitialized = true;
+        }
+
+        private static void RegisterDescriptor(XRRaycastSubsystemDescriptor overrideDescriptor = default)
+        {
+            if (overrideDescriptor != null)
+            {
+                // Clone descriptor
+                var cinfo = new XRRaycastSubsystemDescriptor.Cinfo
+                {
+                    id = overrideDescriptor.id,
+                    subsystemImplementationType = overrideDescriptor.subsystemImplementationType,
+                    supportedTrackableTypes = overrideDescriptor.supportedTrackableTypes,
+                    supportsViewportBasedRaycast = overrideDescriptor.supportsViewportBasedRaycast,
+                    supportsWorldBasedRaycast = overrideDescriptor.supportsWorldBasedRaycast
+                };
+
+                originalDescriptor = typeof(XRRaycastSubsystemDescriptor).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0]
+                                                                         .Invoke(new object[] { cinfo }) as XRRaycastSubsystemDescriptor;
+
+                // Override subsystem
+                overrideDescriptor.subsystemImplementationType = typeof(UnityXRMockRaycastSubsytem);
             }
             else
             {
                 XRRaycastSubsystemDescriptor.RegisterDescriptor(new XRRaycastSubsystemDescriptor.Cinfo
                 {
-                    id = "UnityXRMock-Raycast",
+                    id = ID,
                     subsystemImplementationType = typeof(UnityXRMockRaycastSubsytem),
+                    supportedTrackableTypes = TrackableType.All,
+                    supportsViewportBasedRaycast = true,
+                    supportsWorldBasedRaycast = true
                 });
             }
         }
 
+        private static XRRaycastSubsystemDescriptor GetSubsystemDescriptor()
+        {
+            List<XRRaycastSubsystemDescriptor> descriptors = new List<XRRaycastSubsystemDescriptor>();
+            SubsystemManager.GetSubsystemDescriptors(descriptors);
+            return descriptors.FirstOrDefault(d => d.id != ID);
+        }
+
+        #endregion
+
+        #region Types
+
+        private class Provider : IProvider
+        {
+            public override NativeArray<XRRaycastHit> Raycast(
+                XRRaycastHit defaultRaycastHit,
+                Ray ray,
+                TrackableType trackableTypeMask,
+                Allocator allocator)
+            {
+                var hits = new NativeArray<XRRaycastHit>();
+                return hits;
+            }
+
+            public override NativeArray<XRRaycastHit> Raycast(
+                XRRaycastHit defaultRaycastHit,
+                Vector2 screenPoint,
+                TrackableType trackableTypeMask,
+                Allocator allocator)
+            {
+                var hits = new NativeArray<XRRaycastHit>();
+                return hits;
+            }
+        }
+
+        #endregion
     }
 }

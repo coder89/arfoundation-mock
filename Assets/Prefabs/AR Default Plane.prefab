@@ -59,7 +59,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4483182550890651289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67766d04dd2cd6e4ea318845b2012676, type: 3}
+  m_Script: {fileID: 11500000, guid: c20f693072a2aec45b70bd1162ffdf0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!64 &4171494407522833451
@@ -109,6 +109,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -146,6 +147,7 @@ LineRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
