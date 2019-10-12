@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.Collections;
-using UnityEngine.Experimental;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
 
@@ -68,15 +67,15 @@ namespace UnityEngine.XR.Mock
             base.Stop();
         }
 
-        public override void Destroy()
-        {
-            if (this.wrappedSubsystem != null)
-            {
-                this.wrappedSubsystem.Destroy();
-            }
-
-            base.Destroy();
-        }
+        //public override void Destroy()
+        //{
+        //    if (this.wrappedSubsystem != null)
+        //    {
+        //        this.wrappedSubsystem.Destroy();
+        //    }
+        //
+        //    base.Destroy();
+        //}
 
         protected override IProvider CreateProvider()
         {
@@ -160,10 +159,6 @@ namespace UnityEngine.XR.Mock
 
         private class Provider : IProvider
         {
-            public override void Start() { }
-
-            public override void Stop() { }
-
             public override void Destroy()
             {
                 NativeApi.UnityXRMock_referencePointReset();

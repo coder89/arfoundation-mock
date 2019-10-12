@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine.Experimental;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
 
@@ -56,15 +55,15 @@ namespace UnityEngine.XR.Mock
             base.Stop();
         }
 
-        public override void Destroy()
-        {
-            if (this.wrappedSubsystem != null)
-            {
-                this.wrappedSubsystem.Destroy();
-            }
-
-            base.Destroy();
-        }
+        //public override void Destroy()
+        //{
+        //    if (this.wrappedSubsystem != null)
+        //    {
+        //        this.wrappedSubsystem.Destroy();
+        //    }
+        //
+        //    base.Destroy();
+        //}
 
         protected override IProvider CreateProvider()
         {
@@ -155,10 +154,6 @@ namespace UnityEngine.XR.Mock
 
             public Provider() { }
 
-            public override void Resume() { }
-
-            public override void Pause() { }
-
             public override Promise<SessionInstallationStatus> InstallAsync() => new SessionInstallationPromise();
 
             public override Promise<SessionAvailability> GetAvailabilityAsync() => new SessionAvailabilityPromise();
@@ -170,10 +165,6 @@ namespace UnityEngine.XR.Mock
                     NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
                 }
             }
-
-            public override void Destroy() { }
-
-            public override void Reset() { }
 
             public override void OnApplicationPause()
             {
