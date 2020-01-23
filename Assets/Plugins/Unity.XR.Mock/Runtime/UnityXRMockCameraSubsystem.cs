@@ -38,12 +38,12 @@ namespace UnityEngine.XR.Mock
 
         #region XRCameraSubsystem
 
-        protected override IProvider CreateProvider()
+        protected override Provider CreateProvider()
         {
             this.Initialize();
             return this.wrappedSubsystem?.GetType()
                                          .GetMethod(nameof(CreateProvider), BindingFlags.NonPublic | BindingFlags.Instance)
-                                         .Invoke(this.wrappedSubsystem, null) as IProvider ?? new Provider();
+                                         .Invoke(this.wrappedSubsystem, null) as Provider ?? new MockProvider();
         }
 
         #endregion
@@ -138,7 +138,7 @@ namespace UnityEngine.XR.Mock
 
         #region Types
 
-        private class Provider : IProvider
+        private class MockProvider : Provider
         {
             private XRCameraParams cameraParams;
             private long? timestamp;
