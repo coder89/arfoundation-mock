@@ -35,23 +35,13 @@ namespace UnityEngine.XR.Mock
             Camera.main.transform.localScale = transform.lossyScale;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct AddReferenceResult
-        {
-            public ulong id1;
-            public ulong id2;
-
-            public int trackingState;
-            public bool result;
-        };
-
-        public delegate IntPtr AddReferencePointHandler(float px, float py, float pz,
+        public delegate IntPtr AddAnchorHandler(float px, float py, float pz,
             float rx, float ry, float rz, float rw);
 
-        public delegate bool RequestRemoveReferencePointDelegate(UInt64 id1, UInt64 id2);
+        public delegate bool RequestRemoveAnchorDelegate(UInt64 id1, UInt64 id2);
 
-        public static void UnityARMock_setAddReferencePointHandler(
-            AddReferencePointHandler fp, RequestRemoveReferencePointDelegate fp2)
+        public static void UnityARMock_setAddAnchorHandler(
+            AddAnchorHandler fp, RequestRemoveAnchorDelegate fp2)
         {
             LogNotImplemented();
         }
@@ -158,7 +148,8 @@ namespace UnityEngine.XR.Mock
                     this.bounds,
                     GetAlignment(this.pose),
                     this.trackingState,
-                    defaultPlane.nativePtr);
+                    defaultPlane.nativePtr,
+                    defaultPlane.classification);
             }
 
             public static PlaneAlignment GetAlignment(Pose pose)
@@ -328,94 +319,94 @@ namespace UnityEngine.XR.Mock
             s_trackableIdGenerator = generator;
         }
 
-        #region Reference Point APIs
+        #region Anchor APIs
 
-        private readonly static Dictionary<TrackableId, RefPointInfo> s_refPoints = new Dictionary<TrackableId, RefPointInfo>();
-        private readonly static Dictionary<TrackableId, RefPointInfo> s_addedRefPoints = new Dictionary<TrackableId, RefPointInfo>();
-        private readonly static Dictionary<TrackableId, RefPointInfo> s_updatedRefPoints = new Dictionary<TrackableId, RefPointInfo>();
-        private readonly static Dictionary<TrackableId, RefPointInfo> s_removedRefPoints = new Dictionary<TrackableId, RefPointInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> s_anchors = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> s_addedAnchors = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> s_updatedAnchors = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> s_removedAnchors = new Dictionary<TrackableId, AnchorInfo>();
 
-        public class RefPointInfo
+        public class AnchorInfo
         {
             public TrackableId id;
             public Pose pose;
             public TrackingState trackingState;
 
-            public XRReferencePoint ToXRReferencePoint(XRReferencePoint defaultReferencePoint)
+            public XRAnchor ToXRAnchor(XRAnchor defaultAnchor)
             {
-                return new XRReferencePoint(this.id, this.pose, this.trackingState, defaultReferencePoint.nativePtr);
+                return new XRAnchor(this.id, this.pose, this.trackingState, defaultAnchor.nativePtr);
             }
         }
 
-        public static TrackableId UnityXRMock_attachReferencePoint(TrackableId trackableId, Pose pose)
+        public static TrackableId UnityXRMock_attachAnchor(TrackableId trackableId, Pose pose)
         {
             if (trackableId == TrackableId.invalidId)
             {
                 trackableId = s_trackableIdGenerator();
             }
 
-            if (!s_refPoints.ContainsKey(trackableId) || s_addedRefPoints.ContainsKey(trackableId))
+            if (!s_anchors.ContainsKey(trackableId) || s_addedAnchors.ContainsKey(trackableId))
             {
-                if (!s_refPoints.ContainsKey(trackableId))
+                if (!s_anchors.ContainsKey(trackableId))
                 {
-                    s_refPoints[trackableId] = new RefPointInfo()
+                    s_anchors[trackableId] = new AnchorInfo()
                     {
                         id = trackableId
                     };
                 }
 
-                s_addedRefPoints[trackableId] = s_refPoints[trackableId];
+                s_addedAnchors[trackableId] = s_anchors[trackableId];
             }
             else
             {
-                s_updatedRefPoints[trackableId] = s_refPoints[trackableId];
+                s_updatedAnchors[trackableId] = s_anchors[trackableId];
             }
 
-            var refPointInfo = s_refPoints[trackableId];
-            refPointInfo.pose = pose;
-            refPointInfo.trackingState = TrackingState.Tracking;
-            return refPointInfo.id;
+            var anchorInfo = s_anchors[trackableId];
+            anchorInfo.pose = pose;
+            anchorInfo.trackingState = TrackingState.Tracking;
+            return anchorInfo.id;
         }
 
-        public static void UnityXRMock_updateReferencePoint(TrackableId trackableId, Pose pose, TrackingState trackingState)
+        public static void UnityXRMock_updateAnchor(TrackableId trackableId, Pose pose, TrackingState trackingState)
         {
-            var refPointInfo = s_refPoints[trackableId];
-            refPointInfo.pose = pose;
-            refPointInfo.trackingState = trackingState;
-            s_updatedRefPoints[trackableId] = refPointInfo;
+            var anchorInfo = s_anchors[trackableId];
+            anchorInfo.pose = pose;
+            anchorInfo.trackingState = trackingState;
+            s_updatedAnchors[trackableId] = anchorInfo;
         }
 
-        public static void UnityXRMock_removeReferencePoint(TrackableId trackableId)
+        public static void UnityXRMock_removeAnchor(TrackableId trackableId)
         {
-            if (s_refPoints.ContainsKey(trackableId))
+            if (s_anchors.ContainsKey(trackableId))
             {
-                if (!s_addedRefPoints.Remove(trackableId))
+                if (!s_addedAnchors.Remove(trackableId))
                 {
-                    s_removedRefPoints[trackableId] = s_refPoints[trackableId];
+                    s_removedAnchors[trackableId] = s_anchors[trackableId];
                 }
 
-                s_refPoints.Remove(trackableId);
-                s_updatedRefPoints.Remove(trackableId);
+                s_anchors.Remove(trackableId);
+                s_updatedAnchors.Remove(trackableId);
             }
         }
 
-        public static void UnityXRMock_consumedReferencePointChanges()
+        public static void UnityXRMock_consumedAnchorChanges()
         {
-            s_addedRefPoints.Clear();
-            s_updatedRefPoints.Clear();
-            s_removedRefPoints.Clear();
+            s_addedAnchors.Clear();
+            s_updatedAnchors.Clear();
+            s_removedAnchors.Clear();
         }
 
-        public static void UnityXRMock_referencePointReset()
+        public static void UnityXRMock_anchorReset()
         {
-            UnityXRMock_consumedReferencePointChanges();
-            s_refPoints.Clear();
+            UnityXRMock_consumedAnchorChanges();
+            s_anchors.Clear();
         }
 
-        public static IDictionary<TrackableId, RefPointInfo> refPoints => s_refPoints;
-        public static IReadOnlyCollection<RefPointInfo> addedRefPoints => s_addedRefPoints.Values;
-        public static IReadOnlyCollection<RefPointInfo> updatedRefPoints => s_updatedRefPoints.Values;
-        public static IReadOnlyCollection<RefPointInfo> removedRefPoints => s_removedRefPoints.Values;
+        public static IDictionary<TrackableId, AnchorInfo> anchors => s_anchors;
+        public static IReadOnlyCollection<AnchorInfo> addedAnchors => s_addedAnchors.Values;
+        public static IReadOnlyCollection<AnchorInfo> updatedAnchors => s_updatedAnchors.Values;
+        public static IReadOnlyCollection<AnchorInfo> removedAnchors => s_removedAnchors.Values;
 
         #endregion
 

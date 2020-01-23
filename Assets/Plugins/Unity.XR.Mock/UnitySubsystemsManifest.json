@@ -1,6 +1,6 @@
 {
   "name": "UnityXRMock",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "libraryName": "UnityXRMock",
   "cameras": [
     {
@@ -28,9 +28,9 @@
       "id": "UnityXRMock-Session"
     }
   ],
-  "referencePoints": [
+  "anchors": [
     {
-      "id": "UnityXRMock-ReferencePoint"
+      "id": "UnityXRMock-Anchor"
     }
   ],
   "depths": [

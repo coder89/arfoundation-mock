@@ -35,16 +35,6 @@ namespace UnityEngine.XR.Mock
 
         #region XRPlaneSubsystem
 
-        public override void Start()
-        {
-            if (this.wrappedSubsystem != null)
-            {
-                this.wrappedSubsystem.Start();
-            }
-
-            base.Start();
-        }
-
         public override TrackableChanges<BoundedPlane> GetChanges(Allocator allocator)
         {
             if (this.wrappedSubsystem != null)
@@ -55,32 +45,12 @@ namespace UnityEngine.XR.Mock
             return base.GetChanges(allocator);
         }
 
-        public override void Stop()
-        {
-            if (this.wrappedSubsystem != null)
-            {
-                this.wrappedSubsystem.Stop();
-            }
-
-            base.Stop();
-        }
-
-        //public override void Destroy()
-        //{
-        //    if (this.wrappedSubsystem != null)
-        //    {
-        //        this.wrappedSubsystem.Destroy();
-        //    }
-        //
-        //    base.Destroy();
-        //}
-
-        protected override IProvider CreateProvider()
+        protected override Provider CreateProvider()
         {
             this.Initialize();
             return this.wrappedSubsystem?.GetType()
                                          .GetMethod(nameof(CreateProvider), BindingFlags.NonPublic | BindingFlags.Instance)
-                                         .Invoke(this.wrappedSubsystem, null) as IProvider ?? new Provider();
+                                         .Invoke(this.wrappedSubsystem, null) as Provider ?? new MockProvider();
         }
 
         #endregion
@@ -164,7 +134,7 @@ namespace UnityEngine.XR.Mock
 
         #region Types
 
-        private class Provider : IProvider
+        private class MockProvider : Provider
         {
             public override void Destroy()
             {
