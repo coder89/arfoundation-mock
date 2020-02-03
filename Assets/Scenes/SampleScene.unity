@@ -463,6 +463,7 @@ GameObject:
   - component: {fileID: 826306671}
   - component: {fileID: 826306670}
   - component: {fileID: 826306669}
+  - component: {fileID: 826306672}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -510,6 +511,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &826306672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826306668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56010497b6aaefe4cb3a1bd6f8e3853d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &855304132
 GameObject:
   m_ObjectHideFlags: 0

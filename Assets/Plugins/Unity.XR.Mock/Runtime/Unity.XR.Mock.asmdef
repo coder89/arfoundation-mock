@@ -2,7 +2,8 @@
     "name": "Unity.XR.Mock",
     "references": [
         "Unity.XR.ARFoundation",
-        "Unity.XR.ARSubsystems"
+        "Unity.XR.ARSubsystems",
+        "Unity.XR.Management"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

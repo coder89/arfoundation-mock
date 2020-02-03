@@ -1,6 +1,6 @@
 {
   "name": "UnityXRMock",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "libraryName": "UnityXRMock",
   "cameras": [
     {
@@ -15,12 +15,7 @@
   "planes": [
     {
       "id": "UnityXRMock-Plane",
-      "supportsPlaneFinding": true
-    }
-  ],
-  "inputs": [
-    {
-      "id": "UnityXRMock-Input"
+      "supportsPlaneFinding": false
     }
   ],
   "sessions": [
@@ -31,12 +26,6 @@
   "anchors": [
     {
       "id": "UnityXRMock-Anchor"
-    }
-  ],
-  "depths": [
-    {
-      "id": "UnityXRMock-Depth",
-      "supportsFeaturePoints": true
     }
   ],
   "raycasts": [

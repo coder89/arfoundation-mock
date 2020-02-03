@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Scripting;
@@ -12,131 +9,32 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockCameraSubsystem : XRCameraSubsystem
     {
-
-        #region Constants
-
         public const string ID = "UnityXRMock-Camera";
 
-        #endregion
-
-        #region Fields
-
-        private bool isInitialized;
-        private XRCameraSubsystem wrappedSubsystem;
-        private static XRCameraSubsystemDescriptor originalDescriptor;
-
-        #endregion
-
-        #region Constructors
-
-        public UnityXRMockCameraSubsystem()
-        {
-            this.Initialize();
-        }
-
-        #endregion
-
-        #region XRCameraSubsystem
-
-        protected override Provider CreateProvider()
-        {
-            this.Initialize();
-            return this.wrappedSubsystem?.GetType()
-                                         .GetMethod(nameof(CreateProvider), BindingFlags.NonPublic | BindingFlags.Instance)
-                                         .Invoke(this.wrappedSubsystem, null) as Provider ?? new MockProvider();
-        }
-
-        #endregion
-
-        #region Internal methods
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
-            var descriptor = GetSubsystemDescriptor();
-            RegisterDescriptor(descriptor);
+            // Clone descriptor
+            var cinfo = new XRCameraSubsystemCinfo
+            {
+                id = ID,
+                implementationType = typeof(UnityXRMockCameraSubsystem),
+                supportsAverageBrightness = true,
+                supportsAverageColorTemperature = true,
+                supportsAverageIntensityInLumens = true,
+                supportsCameraConfigurations = false,
+                supportsCameraImage = true,
+                supportsColorCorrection = true,
+                supportsDisplayMatrix = true,
+                supportsFocusModes = false,
+                supportsProjectionMatrix = true,
+                supportsTimestamp = true,
+            };
+
+            Register(cinfo);
         }
 
-        #endregion
-
-        #region Private methods
-
-        private void Initialize()
-        {
-            if (this.isInitialized)
-            {
-                return;
-            }
-
-            if (!UnityXRMockActivator.Active)
-            {
-                if (originalDescriptor == null)
-                {
-                    originalDescriptor = GetSubsystemDescriptor();
-                }
-
-                this.wrappedSubsystem = originalDescriptor?.Create();
-            }
-
-            this.isInitialized = true;
-        }
-
-        private static void RegisterDescriptor(XRCameraSubsystemDescriptor overrideDescriptor = default)
-        {
-            if (overrideDescriptor != null)
-            {
-                // Clone descriptor
-                var cinfo = new XRCameraSubsystemCinfo
-                {
-                    id = overrideDescriptor.id,
-                    implementationType = overrideDescriptor.subsystemImplementationType,
-                    supportsAverageBrightness = overrideDescriptor.supportsAverageBrightness,
-                    supportsAverageColorTemperature = overrideDescriptor.supportsAverageColorTemperature,
-                    supportsCameraConfigurations = overrideDescriptor.supportsCameraConfigurations,
-                    supportsCameraImage = overrideDescriptor.supportsCameraImage,
-                    //supportsColorCorrection = overrideDescriptor.supportsColorCorrection,
-                    supportsDisplayMatrix = overrideDescriptor.supportsDisplayMatrix,
-                    supportsProjectionMatrix = overrideDescriptor.supportsProjectionMatrix,
-                    //supportsTimestamp = overrideDescriptor.supportsTimestampsupportsTimestamp,
-                };
-
-                originalDescriptor = typeof(XRCameraSubsystemDescriptor).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0]
-                                                                        .Invoke(new object[] { cinfo }) as XRCameraSubsystemDescriptor;
-
-                // Override subsystem
-                overrideDescriptor.subsystemImplementationType = typeof(UnityXRMockCameraSubsystem);
-            }
-            else
-            {
-                // Clone descriptor
-                var cinfo = new XRCameraSubsystemCinfo
-                {
-                    id = ID,
-                    implementationType = typeof(UnityXRMockCameraSubsystem),
-                    supportsAverageBrightness = true,
-                    supportsAverageColorTemperature = true,
-                    supportsCameraConfigurations = false,
-                    supportsCameraImage = true,
-                    supportsColorCorrection = false,
-                    supportsDisplayMatrix = true,
-                    supportsProjectionMatrix = true,
-                    supportsTimestamp = true,
-                };
-
-                Register(cinfo);
-            }
-        }
-
-        private static XRCameraSubsystemDescriptor GetSubsystemDescriptor()
-        {
-            List<XRCameraSubsystemDescriptor> descriptors = new List<XRCameraSubsystemDescriptor>();
-            SubsystemManager.GetSubsystemDescriptors(descriptors);
-            return descriptors.FirstOrDefault(d => d.id != ID);
-        }
-
-        #endregion
-
-        #region Types
+        protected override Provider CreateProvider() => new MockProvider();
 
         private class MockProvider : Provider
         {
@@ -157,6 +55,11 @@ namespace UnityEngine.XR.Mock
             {
                 this.ResetState();
                 base.Stop();
+            }
+
+            public override void Destroy()
+            {
+                base.Destroy();
             }
 
             public override bool TryGetFrame(XRCameraParams cameraParams, out XRCameraFrame cameraFrame)
@@ -336,7 +239,5 @@ namespace UnityEngine.XR.Mock
                 }
             }
         }
-
-        #endregion
     }
 }

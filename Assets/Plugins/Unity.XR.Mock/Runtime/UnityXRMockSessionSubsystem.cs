@@ -10,113 +10,20 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockSessionSubsystem : XRSessionSubsystem
     {
-        #region Constants
-
         public const string ID = "UnityXRMock-Session";
 
-        #endregion
-
-        #region Fields
-
-        private bool isInitialized;
-        private XRSessionSubsystem wrappedSubsystem;
-        private static XRSessionSubsystemDescriptor originalDescriptor;
-
-        #endregion
-
-        #region Constructors
-
-        public UnityXRMockSessionSubsystem()
-        {
-            this.Initialize();
-        }
-
-        #endregion
-
-        #region XRSessionSubsystem
-
-        protected override Provider CreateProvider()
-        {
-            this.Initialize();
-            return this.wrappedSubsystem?.GetType()
-                                         .GetMethod(nameof(CreateProvider), BindingFlags.NonPublic | BindingFlags.Instance)
-                                         .Invoke(this.wrappedSubsystem, null) as Provider ?? new MockProvider();
-        }
-
-        #endregion
-
-        #region Internal methods
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
-            var descriptor = GetSubsystemDescriptor();
-            RegisterDescriptor(descriptor);
+            XRSessionSubsystemDescriptor.RegisterDescriptor(new XRSessionSubsystemDescriptor.Cinfo
+            {
+                id = ID,
+                subsystemImplementationType = typeof(UnityXRMockSessionSubsystem),
+                supportsInstall = false
+            });
         }
 
-        #endregion
-
-        #region Private methods
-
-        private void Initialize()
-        {
-            if (this.isInitialized)
-            {
-                return;
-            }
-
-            if (!UnityXRMockActivator.Active)
-            {
-                if (originalDescriptor == null)
-                {
-                    originalDescriptor = GetSubsystemDescriptor();
-                }
-
-                this.wrappedSubsystem = originalDescriptor?.Create();
-            }
-
-            this.isInitialized = true;
-        }
-
-        private static void RegisterDescriptor(XRSessionSubsystemDescriptor overrideDescriptor = default)
-        {
-            if (overrideDescriptor != null)
-            {
-                // Clone descriptor
-                var cinfo = new XRSessionSubsystemDescriptor.Cinfo
-                {
-                    id = overrideDescriptor.id,
-                    subsystemImplementationType = overrideDescriptor.subsystemImplementationType,
-                    supportsInstall = overrideDescriptor.supportsInstall
-                };
-
-                originalDescriptor = typeof(XRSessionSubsystemDescriptor).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0]
-                                                                         .Invoke(new object[] { cinfo }) as XRSessionSubsystemDescriptor;
-
-                // Override subsystem
-                overrideDescriptor.subsystemImplementationType = typeof(UnityXRMockSessionSubsystem);
-            }
-            else
-            {
-                XRSessionSubsystemDescriptor.RegisterDescriptor(new XRSessionSubsystemDescriptor.Cinfo
-                {
-                    id = ID,
-                    subsystemImplementationType = typeof(UnityXRMockSessionSubsystem),
-                    supportsInstall = false
-                });
-            }
-        }
-
-        private static XRSessionSubsystemDescriptor GetSubsystemDescriptor()
-        {
-            List<XRSessionSubsystemDescriptor> descriptors = new List<XRSessionSubsystemDescriptor>();
-            SubsystemManager.GetSubsystemDescriptors(descriptors);
-            return descriptors.FirstOrDefault(d => d.id != ID);
-        }
-
-        #endregion
-
-        #region Types
+        protected override Provider CreateProvider() => new MockProvider();
 
         private class MockProvider : Provider
         {
@@ -175,7 +82,5 @@ namespace UnityEngine.XR.Mock
 
             protected override void OnKeepWaiting() { }
         }
-
-        #endregion
     }
 }
