@@ -5,6 +5,7 @@ namespace UnityEngine.XR.Mock.Example
 {
     public class SimulatePointCloud : MonoBehaviour
     {
+#pragma warning disable CS0649
         [SerializeField]
         float m_Radius = 5f;
 
@@ -28,6 +29,7 @@ namespace UnityEngine.XR.Mock.Example
 
         [SerializeField]
         float m_MaxSleepTime = 2f;
+#pragma warning restore
 
         Vector3[] m_Positions;
 

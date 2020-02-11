@@ -5,11 +5,13 @@ namespace UnityEngine.XR.Mock.Example
 {
     public class SimulatePlanes : MonoBehaviour
     {
+#pragma warning disable CS0649
         [SerializeField]
         bool m_Rotate;
 
         [SerializeField]
         float m_TrackingLostProbability = 0.01f;
+#pragma warning restore
 
         IEnumerator Start()
         {

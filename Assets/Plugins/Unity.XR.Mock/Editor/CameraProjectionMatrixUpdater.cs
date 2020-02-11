@@ -2,8 +2,10 @@
 {
     public class CameraProjectionMatrixUpdater : MonoBehaviour
     {
+#pragma warning disable CS0649
         [SerializeField]
         Camera m_ARCamera;
+#pragma warning restore
 
         void Update()
         {

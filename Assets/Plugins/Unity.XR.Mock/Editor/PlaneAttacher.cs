@@ -5,11 +5,13 @@ namespace UnityEngine.XR.Mock.Example
     [RequireComponent(typeof(Raycaster))]
     public class PlaneAttacher : MonoBehaviour
     {
+#pragma warning disable CS0649
         [SerializeField]
         ARSessionOrigin m_ARSessionOrigin;
 
         [SerializeField]
         float m_DistanceFromPlane = .1f;
+#pragma warning restore
 
         ARAnchor m_Attachment;
 

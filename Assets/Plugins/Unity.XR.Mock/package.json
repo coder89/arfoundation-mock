@@ -1,8 +1,8 @@
 {
   "name": "com.unity.xr.mock",
   "displayName": "UnityXRMock XR Plugin",
-  "version": "3.0.1",
-  "unity": "2019.2",
+  "version": "3.0.2",
+  "unity": "2019.3",
   "description": "Provides mock implementation of AR Foundation plugin API.\n=Supported Features=\n-Mock planes\n-Mock reference points\n-Mock Camera parameters (without camera texture)\n-Mock session",
   "keywords": [
     "mock",

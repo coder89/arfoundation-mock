@@ -7,6 +7,7 @@ namespace UnityEngine.XR.Mock.Example
 {
     public class SimulateAnchors : MonoBehaviour
     {
+#pragma warning disable CS0649
         [SerializeField]
         ARAnchorManager m_AnchorManager;
 
@@ -15,6 +16,7 @@ namespace UnityEngine.XR.Mock.Example
 
         [SerializeField]
         float m_Radius = 5f;
+#pragma warning restore
 
         List<ARAnchor> m_Anchors;
 
