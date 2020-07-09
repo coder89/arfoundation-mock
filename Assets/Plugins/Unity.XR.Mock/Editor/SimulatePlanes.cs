@@ -45,6 +45,8 @@ namespace UnityEngine.XR.Mock.Example
             }
         }
 
-        Pose pose { get { return new Pose(transform.localPosition, transform.localRotation); } }
+        //Pose pose { get { return new Pose(transform.localPosition, transform.localRotation); } }
+         Pose pose { get { return new Pose(transform.position, transform.rotation); } }
+
     }
 }
