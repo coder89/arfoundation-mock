@@ -18,12 +18,12 @@ namespace UnityEngine.XR.Mock
             XRSessionSubsystemDescriptor.RegisterDescriptor(new XRSessionSubsystemDescriptor.Cinfo
             {
                 id = ID,
-                subsystemImplementationType = typeof(UnityXRMockSessionSubsystem),
-                supportsInstall = false
+                providerType = typeof(MockProvider),
+                subsystemTypeOverride = typeof(UnityXRMockSessionSubsystem),
+                supportsInstall = false,
+                supportsMatchFrameRate = false
             });
         }
-
-        protected override Provider CreateProvider() => new MockProvider();
 
         private class MockProvider : Provider
         {

@@ -81,6 +81,7 @@ namespace UnityEngine.XR.Mock
             DestroySubsystem<XRAnchorSubsystem>();
             DestroySubsystem<XRCameraSubsystem>();
             DestroySubsystem<XRSessionSubsystem>();
+
             return true;
         }
 

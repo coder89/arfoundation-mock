@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.XR.Management;
 
 namespace UnityEngine.XR.Mock
 {
     /// <summary>
     /// Holds settings that are used to configure the Unity UnityXRMock Plugin.
     /// </summary>
+    [System.Serializable]
+    [XRConfigurationData("UnityXRMock", "com.unity.xr.management.build")]
     public class UnityXRMockSettings : ScriptableObject
     {
         /// <summary>

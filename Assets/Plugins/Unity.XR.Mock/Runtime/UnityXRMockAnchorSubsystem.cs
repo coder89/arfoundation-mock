@@ -16,20 +16,22 @@ namespace UnityEngine.XR.Mock
             XRAnchorSubsystemDescriptor.Create(new XRAnchorSubsystemDescriptor.Cinfo
             {
                 id = ID,
-                subsystemImplementationType = typeof(UnityXRMockAnchorSubsystem),
+                providerType = typeof(MockProvider),
+                subsystemTypeOverride = typeof(UnityXRMockAnchorSubsystem),
                 supportsTrackableAttachments = true
             });
         }
 
-        protected override Provider CreateProvider() => new MockProvider();
-
         private class MockProvider : Provider
         {
+            public override void Start() { }
+
             public override void Destroy()
             {
                 NativeApi.UnityXRMock_anchorReset();
-                base.Destroy();
             }
+
+            public override void Stop() { }
 
             public override unsafe TrackableChanges<XRAnchor> GetChanges(
                 XRAnchor defaultAnchor,

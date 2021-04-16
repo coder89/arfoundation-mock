@@ -13,14 +13,14 @@ namespace UnityEngine.XR.Mock
             XRRaycastSubsystemDescriptor.RegisterDescriptor(new XRRaycastSubsystemDescriptor.Cinfo
             {
                 id = ID,
-                subsystemImplementationType = typeof(UnityXRMockRaycastSubsytem),
+                providerType = typeof(MockProvider),
+                subsystemTypeOverride = typeof(UnityXRMockRaycastSubsytem),
                 supportedTrackableTypes = TrackableType.All,
                 supportsViewportBasedRaycast = true,
-                supportsWorldBasedRaycast = true
+                supportsWorldBasedRaycast = true,
+                supportsTrackedRaycasts = true
             });
         }
-
-        protected override Provider CreateProvider() => new MockProvider();
 
         private class MockProvider : Provider
         {
