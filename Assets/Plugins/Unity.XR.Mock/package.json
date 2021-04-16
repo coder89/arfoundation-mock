@@ -1,8 +1,8 @@
 {
   "name": "com.unity.xr.mock",
   "displayName": "UnityXRMock XR Plugin",
-  "version": "3.0.2",
-  "unity": "2019.3",
+  "version": "4.0.0",
+  "unity": "2020.3",
   "description": "Provides mock implementation of AR Foundation plugin API.\n=Supported Features=\n-Mock planes\n-Mock reference points\n-Mock Camera parameters (without camera texture)\n-Mock session",
   "keywords": [
     "mock",
@@ -12,9 +12,9 @@
     "reality"
   ],
   "dependencies": {
-    "com.unity.xr.arfoundation": "3.0.1",
-    "com.unity.xr.arsubsystems": "3.0.0",
-    "com.unity.xr.management": "3.0.4"
+    "com.unity.xr.arfoundation": "4.0.12",
+    "com.unity.xr.arsubsystems": "4.0.12",
+    "com.unity.xr.management": "4.0.1"
   },
   "repository": {
     "type": "git",
