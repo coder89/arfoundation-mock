@@ -2,7 +2,7 @@
 
 [![openupm](https://img.shields.io/npm/v/com.unity.xr.mock?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.unity.xr.mock/)
 
-Unity Editor plugin that let's you mock AR environment for development &amp; testing on your PC using Unity 2020.3 and AR Foundation 4.x
+Unity Editor plugin that let's you mock AR environment for development &amp; testing on your PC using Unity 2021.1 and AR Foundation 4.x
 
 # How to use it #
 
