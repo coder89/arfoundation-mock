@@ -13,11 +13,11 @@ namespace UnityEngine.XR.Mock.Example
             SubsystemManager.GetSubsystemDescriptors(descriptors);
             foreach (var descriptor in descriptors)
             {
-                Debug.LogFormat("Session: {0}", descriptor.id);
+                Debug.unityLogger.Log("ar-mock", $"Session: {descriptor.id}");
             }
 
             if (descriptors.Count == 0)
-                Debug.Log("No sessions available.");
+                Debug.unityLogger.Log("ar-mock", "No sessions available.");
         }
     }
 }

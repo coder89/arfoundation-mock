@@ -26,7 +26,7 @@ namespace UnityEngine.XR.Mock
             if (!IsActive) { return false; }
 #endif
 
-            Debug.Log("Initializing UnityXRMock.");
+            Debug.unityLogger.Log("ar-mock", "Initializing UnityXRMock.");
 
             CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, UnityXRMockSessionSubsystem.ID);
             CreateSubsystem<XRCameraSubsystemDescriptor, XRCameraSubsystem>(s_CameraSubsystemDescriptors, UnityXRMockCameraSubsystem.ID);
@@ -36,7 +36,7 @@ namespace UnityEngine.XR.Mock
 
             if (sessionSubsystem == null)
             {
-                Debug.LogError("Failed to load session subsystem.");
+                Debug.unityLogger.LogError("ar-mock", "Failed to load session subsystem.");
             }
 
             return sessionSubsystem != null;
@@ -54,7 +54,7 @@ namespace UnityEngine.XR.Mock
                 StartSubsystem<XRRaycastSubsystem>();
             }
 
-            return true;
+            return base.Start();
         }
 
         public override bool Stop()
@@ -69,12 +69,12 @@ namespace UnityEngine.XR.Mock
                 StopSubsystem<XRSessionSubsystem>();
             }
 
-            return true;
+            return base.Stop();
         }
 
         public override bool Deinitialize()
         {
-            Debug.Log("Deinitializing UnityXRMock.");
+            Debug.unityLogger.Log("ar-mock", "Deinitializing UnityXRMock.");
 
             DestroySubsystem<XRRaycastSubsystem>();
             DestroySubsystem<XRPlaneSubsystem>();
@@ -82,7 +82,7 @@ namespace UnityEngine.XR.Mock
             DestroySubsystem<XRCameraSubsystem>();
             DestroySubsystem<XRSessionSubsystem>();
 
-            return true;
+            return base.Deinitialize();
         }
 
         UnityXRMockLoaderSettings GetSettings()
