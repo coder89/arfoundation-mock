@@ -13,16 +13,16 @@ using UnityEditor.XR.Management.Metadata;
 
 namespace UnityEditor.XR.Mock
 {
-    class XRPackage : IXRPackage
+    internal class UnityXRMockPackage : IXRPackage
     {
-        class UnityXRMockLoaderMetadata : IXRLoaderMetadata
+        private class UnityXRMockLoaderMetadata : IXRLoaderMetadata
         {
             public string loaderName { get; set; }
             public string loaderType { get; set; }
             public List<BuildTargetGroup> supportedBuildTargets { get; set; }
         }
 
-        class UnityXRMockPackageMetadata : IXRPackageMetadata
+        private class UnityXRMockPackageMetadata : IXRPackageMetadata
         {
             public string packageName { get; set; }
             public string packageId { get; set; }
@@ -32,19 +32,18 @@ namespace UnityEditor.XR.Mock
 
         static IXRPackageMetadata s_Metadata = new UnityXRMockPackageMetadata()
         {
-            packageName = "UnityXRMock Plugin",
+            packageName = "UnityXRMock",
             packageId = "com.unity.xr.mock",
-            settingsType = typeof(UnityXRMockSettings).FullName,
+            settingsType = typeof(UnityXRMockLoaderSettings).FullName,
             loaderMetadata = new List<IXRLoaderMetadata>()
             {
                 new UnityXRMockLoaderMetadata()
                 {
                     loaderName = "UnityXRMock",
                     loaderType = typeof(UnityXRMockLoader).FullName,
-                    supportedBuildTargets = new List<BuildTargetGroup>()
-                    {
-                        BuildTargetGroup.iOS
-                    }
+                    supportedBuildTargets = Enum.GetValues(typeof(BuildTargetGroup))
+                        .Cast<BuildTargetGroup>()
+                        .ToList()
                 },
             }
         };
@@ -53,10 +52,9 @@ namespace UnityEditor.XR.Mock
 
         public bool PopulateNewSettingsInstance(ScriptableObject obj)
         {
-            if (obj is UnityXRMockSettings settings)
+            var settings = obj as UnityXRMockLoaderSettings;
+            if (settings != null)
             {
-                UnityXRMockSettings.currentSettings = settings;
-                settings.requirement = UnityXRMockSettings.Requirement.Required;
                 return true;
             }
 

@@ -9,15 +9,13 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockCameraSubsystem : XRCameraSubsystem
     {
-        public const string ID = "UnityXRMock-Camera";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
             // Clone descriptor
             var cinfo = new XRCameraSubsystemCinfo
             {
-                id = ID,
+                id = typeof(UnityXRMockCameraSubsystem).FullName,
                 providerType = typeof(MockProvider),
                 subsystemTypeOverride = typeof(UnityXRMockCameraSubsystem),
                 supportsAverageBrightness = true,
@@ -46,6 +44,9 @@ namespace UnityEngine.XR.Mock
             private long? timestamp;
             private Vector2? screenSize;
             private ScreenOrientation? screenOrientation;
+
+            [Preserve]
+            public MockProvider() { }
 
             public override bool permissionGranted => CameraApi.permissionGranted;
 

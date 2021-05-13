@@ -1,16 +1,13 @@
 {
-    "name": "Unity.XR.Mock.Editor",
+    "name": "Unity.XR.Mock.Test",
     "rootNamespace": "",
     "references": [
         "Unity.XR.Mock",
         "Unity.XR.ARFoundation",
         "Unity.XR.ARSubsystems",
-        "Unity.XR.Management",
-        "Unity.XR.Management.Editor"
+        "Unity.XR.Management"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,

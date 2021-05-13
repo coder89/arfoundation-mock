@@ -8,14 +8,12 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockPlaneSubsystem : XRPlaneSubsystem
     {
-        public const string ID = "UnityXRMock-Plane";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
             XRPlaneSubsystemDescriptor.Create(new XRPlaneSubsystemDescriptor.Cinfo
             {
-                id = ID,
+                id = typeof(UnityXRMockPlaneSubsystem).FullName,
                 providerType = typeof(MockProvider),
                 subsystemTypeOverride = typeof(UnityXRMockPlaneSubsystem),
                 supportsHorizontalPlaneDetection = true,
@@ -29,6 +27,9 @@ namespace UnityEngine.XR.Mock
         private class MockProvider : Provider
         {
             private PlaneDetectionMode _currentPlaneDetectionMode;
+
+            [Preserve]
+            public MockProvider() { }
 
             public override void Start() { }
 

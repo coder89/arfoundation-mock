@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
 
@@ -10,14 +7,12 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockSessionSubsystem : XRSessionSubsystem
     {
-        public const string ID = "UnityXRMock-Session";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
             XRSessionSubsystemDescriptor.RegisterDescriptor(new XRSessionSubsystemDescriptor.Cinfo
             {
-                id = ID,
+                id = typeof(UnityXRMockSessionSubsystem).FullName,
                 providerType = typeof(MockProvider),
                 subsystemTypeOverride = typeof(UnityXRMockSessionSubsystem),
                 supportsInstall = false,
@@ -29,6 +24,7 @@ namespace UnityEngine.XR.Mock
         {
             private bool isPaused = false;
 
+            [Preserve]
             public MockProvider() { }
 
             public override Promise<SessionInstallationStatus> InstallAsync() => new SessionInstallationPromise();

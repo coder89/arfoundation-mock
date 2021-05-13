@@ -1,20 +1,19 @@
 using Unity.Collections;
+using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
 
 namespace UnityEngine.XR.Mock
 {
-    public sealed class UnityXRMockRaycastSubsytem : XRRaycastSubsystem
+    public sealed class UnityXRMockRaycastSubsystem : XRRaycastSubsystem
     {
-        public const string ID = "UnityXRMock-Raycast";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
             XRRaycastSubsystemDescriptor.RegisterDescriptor(new XRRaycastSubsystemDescriptor.Cinfo
             {
-                id = ID,
+                id = typeof(UnityXRMockRaycastSubsystem).FullName,
                 providerType = typeof(MockProvider),
-                subsystemTypeOverride = typeof(UnityXRMockRaycastSubsytem),
+                subsystemTypeOverride = typeof(UnityXRMockRaycastSubsystem),
                 supportedTrackableTypes = TrackableType.All,
                 supportsViewportBasedRaycast = true,
                 supportsWorldBasedRaycast = true,
@@ -24,6 +23,9 @@ namespace UnityEngine.XR.Mock
 
         private class MockProvider : Provider
         {
+            [Preserve]
+            public MockProvider() { }
+
             public override NativeArray<XRRaycastHit> Raycast(
                 XRRaycastHit defaultRaycastHit,
                 Ray ray,

@@ -8,31 +8,37 @@ namespace UnityEngine.XR.Mock
     {
         private static List<XRSessionSubsystemDescriptor> s_SessionSubsystemDescriptors = new List<XRSessionSubsystemDescriptor>();
         private static List<XRCameraSubsystemDescriptor> s_CameraSubsystemDescriptors = new List<XRCameraSubsystemDescriptor>();
-        private static List<XRAnchorSubsystemDescriptor> s_AnchorSubsystemDescriptors = new List<XRAnchorSubsystemDescriptor>();
+        private static List<XRDepthSubsystemDescriptor> s_DepthSubsystemDescriptors = new List<XRDepthSubsystemDescriptor>();
         private static List<XRPlaneSubsystemDescriptor> s_PlaneSubsystemDescriptors = new List<XRPlaneSubsystemDescriptor>();
+        private static List<XRAnchorSubsystemDescriptor> s_AnchorSubsystemDescriptors = new List<XRAnchorSubsystemDescriptor>();
         private static List<XRRaycastSubsystemDescriptor> s_RaycastSubsystemDescriptors = new List<XRRaycastSubsystemDescriptor>();
 
-        public static bool IsActive { get; set; } = false;
+        public static bool IsActive { get; set; } = true;
 
         public XRSessionSubsystem sessionSubsystem => this.GetLoadedSubsystem<XRSessionSubsystem>();
         public XRCameraSubsystem cameraSubsystem => this.GetLoadedSubsystem<XRCameraSubsystem>();
-        public XRAnchorSubsystem anchorSubsystem => this.GetLoadedSubsystem<XRAnchorSubsystem>();
+        public XRDepthSubsystem depthSubsystem => this.GetLoadedSubsystem<XRDepthSubsystem>();
         public XRPlaneSubsystem planeSubsystem => this.GetLoadedSubsystem<XRPlaneSubsystem>();
+        public XRAnchorSubsystem anchorSubsystem => this.GetLoadedSubsystem<XRAnchorSubsystem>();
         public XRRaycastSubsystem raycastSubsystem => this.GetLoadedSubsystem<XRRaycastSubsystem>();
 
         public override bool Initialize()
         {
+            if (sessionSubsystem != null)
+            { return true; }
+
+            Debug.unityLogger.Log("ar-mock", "Initializing UnityXRMock.");
+
 #if !UNITY_EDITOR
             if (!IsActive) { return false; }
 #endif
 
-            Debug.unityLogger.Log("ar-mock", "Initializing UnityXRMock.");
-
-            CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, UnityXRMockSessionSubsystem.ID);
-            CreateSubsystem<XRCameraSubsystemDescriptor, XRCameraSubsystem>(s_CameraSubsystemDescriptors, UnityXRMockCameraSubsystem.ID);
-            CreateSubsystem<XRAnchorSubsystemDescriptor, XRAnchorSubsystem>(s_AnchorSubsystemDescriptors, UnityXRMockAnchorSubsystem.ID);
-            CreateSubsystem<XRPlaneSubsystemDescriptor, XRPlaneSubsystem>(s_PlaneSubsystemDescriptors, UnityXRMockPlaneSubsystem.ID);
-            CreateSubsystem<XRRaycastSubsystemDescriptor, XRRaycastSubsystem>(s_RaycastSubsystemDescriptors, UnityXRMockRaycastSubsytem.ID);
+            CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, typeof(UnityXRMockSessionSubsystem).FullName);
+            CreateSubsystem<XRCameraSubsystemDescriptor, XRCameraSubsystem>(s_CameraSubsystemDescriptors, typeof(UnityXRMockCameraSubsystem).FullName);
+            CreateSubsystem<XRDepthSubsystemDescriptor, XRDepthSubsystem>(s_DepthSubsystemDescriptors, typeof(UnityXRMockDepthSubsystem).FullName);
+            CreateSubsystem<XRPlaneSubsystemDescriptor, XRPlaneSubsystem>(s_PlaneSubsystemDescriptors, typeof(UnityXRMockPlaneSubsystem).FullName);
+            CreateSubsystem<XRAnchorSubsystemDescriptor, XRAnchorSubsystem>(s_AnchorSubsystemDescriptors, typeof(UnityXRMockAnchorSubsystem).FullName);
+            CreateSubsystem<XRRaycastSubsystemDescriptor, XRRaycastSubsystem>(s_RaycastSubsystemDescriptors, typeof(UnityXRMockRaycastSubsystem).FullName);
 
             if (sessionSubsystem == null)
             {
@@ -44,13 +50,16 @@ namespace UnityEngine.XR.Mock
 
         public override bool Start()
         {
+            Debug.unityLogger.Log("ar-mock", "Starting UnityXRMock.");
+
             var settings = GetSettings();
             if (settings != null && settings.startAndStopSubsystems)
             {
                 StartSubsystem<XRSessionSubsystem>();
                 StartSubsystem<XRCameraSubsystem>();
-                StartSubsystem<XRAnchorSubsystem>();
+                StartSubsystem<XRDepthSubsystem>();
                 StartSubsystem<XRPlaneSubsystem>();
+                StartSubsystem<XRAnchorSubsystem>();
                 StartSubsystem<XRRaycastSubsystem>();
             }
 
@@ -59,12 +68,15 @@ namespace UnityEngine.XR.Mock
 
         public override bool Stop()
         {
+            Debug.unityLogger.Log("ar-mock", "Stopping UnityXRMock.");
+
             var settings = GetSettings();
             if (settings != null && settings.startAndStopSubsystems)
             {
                 StopSubsystem<XRRaycastSubsystem>();
-                StopSubsystem<XRPlaneSubsystem>();
                 StopSubsystem<XRAnchorSubsystem>();
+                StopSubsystem<XRPlaneSubsystem>();
+                StopSubsystem<XRDepthSubsystem>();
                 StopSubsystem<XRCameraSubsystem>();
                 StopSubsystem<XRSessionSubsystem>();
             }
@@ -77,8 +89,9 @@ namespace UnityEngine.XR.Mock
             Debug.unityLogger.Log("ar-mock", "Deinitializing UnityXRMock.");
 
             DestroySubsystem<XRRaycastSubsystem>();
-            DestroySubsystem<XRPlaneSubsystem>();
             DestroySubsystem<XRAnchorSubsystem>();
+            DestroySubsystem<XRPlaneSubsystem>();
+            DestroySubsystem<XRDepthSubsystem>();
             DestroySubsystem<XRCameraSubsystem>();
             DestroySubsystem<XRSessionSubsystem>();
 

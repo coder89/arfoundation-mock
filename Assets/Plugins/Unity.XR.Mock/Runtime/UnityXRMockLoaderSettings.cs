@@ -1,12 +1,13 @@
-﻿using UnityEngine.XR.Management;
+﻿using System;
+using UnityEngine.XR.Management;
 
 namespace UnityEngine.XR.Mock
 {
     /// <summary>
     /// Settings to control the UnityXRMockLoader behavior.
     /// </summary>
-    [XRConfigurationData("UnityXRMock/Loader", UnityXRMockLoaderConstants.k_SettingsKey)]
-    [System.Serializable]
+    [Serializable]
+    [XRConfigurationData("UnityXRMock", UnityXRMockLoaderConstants.k_SettingsKey)]
     public class UnityXRMockLoaderSettings : ScriptableObject
     {
         /// <summary>

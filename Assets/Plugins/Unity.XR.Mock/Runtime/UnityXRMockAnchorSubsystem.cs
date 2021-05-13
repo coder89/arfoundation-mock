@@ -8,14 +8,12 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockAnchorSubsystem : XRAnchorSubsystem
     {
-        public const string ID = "UnityXRMock-Anchor";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
             XRAnchorSubsystemDescriptor.Create(new XRAnchorSubsystemDescriptor.Cinfo
             {
-                id = ID,
+                id = typeof(UnityXRMockAnchorSubsystem).FullName,
                 providerType = typeof(MockProvider),
                 subsystemTypeOverride = typeof(UnityXRMockAnchorSubsystem),
                 supportsTrackableAttachments = true
@@ -24,6 +22,9 @@ namespace UnityEngine.XR.Mock
 
         private class MockProvider : Provider
         {
+            [Preserve]
+            public MockProvider() { }
+
             public override void Start() { }
 
             public override void Destroy()
