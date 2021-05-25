@@ -21,7 +21,7 @@ namespace UnityEngine.XR.Mock.Example
             boundaryPoints[2] = new Vector2(+.5f, +.5f);
             boundaryPoints[3] = new Vector2(+.5f, -.5f);
 
-            var planeId = PlaneApi.Add(pose, boundaryPoints);
+            var planeId = PlaneApi.Add(pose, boundaryPoints, TrackingState.Tracking, default, default, default, default);
 
             float angle = 0f;
             while (enabled)
@@ -32,7 +32,7 @@ namespace UnityEngine.XR.Mock.Example
                     angle += Time.deltaTime * 10f;
                 }
 
-                PlaneApi.Update(planeId, pose, boundaryPoints);
+                PlaneApi.Update(planeId, pose, boundaryPoints, default, default, default, default);
 
                 if (Random.value < m_TrackingLostProbability)
                 {
@@ -46,7 +46,7 @@ namespace UnityEngine.XR.Mock.Example
         }
 
         //Pose pose { get { return new Pose(transform.localPosition, transform.localRotation); } }
-         Pose pose { get { return new Pose(transform.position, transform.rotation); } }
+        Pose pose { get { return new Pose(transform.position, transform.rotation); } }
 
     }
 }

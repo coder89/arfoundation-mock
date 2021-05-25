@@ -79,7 +79,7 @@ namespace UnityEngine.XR.Mock.Example
                 velocities[i] = Random.insideUnitCircle * m_Speed;
             }
 
-            var planeId = PlaneApi.Add(pose, GenerateConvexHull(points));
+            var planeId = PlaneApi.Add(pose, GenerateConvexHull(points), TrackingState.Tracking, default, default, default, default);
 
             while (enabled)
             {
@@ -98,7 +98,7 @@ namespace UnityEngine.XR.Mock.Example
                 }
 
                 if (hullChanged || transform.hasChanged)
-                    PlaneApi.Update(planeId, pose, GenerateConvexHull(points));
+                    PlaneApi.Update(planeId, pose, GenerateConvexHull(points), default, default, default, default);
 
                 transform.hasChanged = false;
 

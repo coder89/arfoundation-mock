@@ -133,10 +133,11 @@ namespace UnityEngine.XR.Mock
             public TrackableId subsumedById;
             public Pose pose;
             public Vector2 center;
-            public Vector2 bounds;
+            public Vector2 size;
             public Vector2[] boundaryPoints;
             public TrackingState trackingState;
-            public int numPoints;
+            public PlaneAlignment? planeAlignment;
+            public PlaneClassification? planeClassification;
 
             public BoundedPlane ToBoundedPlane(BoundedPlane defaultPlane)
             {
@@ -145,11 +146,11 @@ namespace UnityEngine.XR.Mock
                     this.subsumedById,
                     this.pose,
                     this.center,
-                    this.bounds,
-                    GetAlignment(this.pose),
+                    this.size,
+                    planeAlignment ?? GetAlignment(this.pose),
                     this.trackingState,
                     defaultPlane.nativePtr,
-                    defaultPlane.classification);
+                    planeClassification ?? defaultPlane.classification);
             }
 
             public static PlaneAlignment GetAlignment(Pose pose)
@@ -174,8 +175,14 @@ namespace UnityEngine.XR.Mock
         private readonly static Dictionary<TrackableId, PlaneInfo> s_removedPlanes = new Dictionary<TrackableId, PlaneInfo>();
 
         public static void UnityXRMock_setPlaneData(
-            TrackableId planeId, Pose pose, Vector2 center, Vector2 bounds,
-            Vector2[] boundaryPoints, int numPoints, TrackingState trackingState)
+            TrackableId planeId,
+            Pose pose,
+            Vector2 center,
+            Vector2 size,
+            Vector2[] boundaryPoints,
+            TrackingState trackingState,
+            PlaneAlignment? alignment,
+            PlaneClassification? classification)
         {
             if (!s_planes.ContainsKey(planeId) || s_addedPlanes.ContainsKey(planeId))
             {
@@ -197,10 +204,11 @@ namespace UnityEngine.XR.Mock
             var planeInfo = s_planes[planeId];
             planeInfo.pose = pose;
             planeInfo.center = center;
-            planeInfo.bounds = bounds;
+            planeInfo.size = size;
             planeInfo.boundaryPoints = boundaryPoints;
-            planeInfo.numPoints = numPoints;
             planeInfo.trackingState = trackingState;
+            planeInfo.planeAlignment = alignment;
+            planeInfo.planeClassification = classification;
         }
 
         public static void UnityXRMock_setPlaneTrackingState(TrackableId planeId, TrackingState trackingState)
@@ -331,6 +339,7 @@ namespace UnityEngine.XR.Mock
             public TrackableId id;
             public Pose pose;
             public TrackingState trackingState;
+            public Guid sessionId;
 
             public XRAnchor ToXRAnchor(XRAnchor defaultAnchor)
             {
@@ -338,7 +347,7 @@ namespace UnityEngine.XR.Mock
             }
         }
 
-        public static TrackableId UnityXRMock_attachAnchor(TrackableId trackableId, Pose pose)
+        public static TrackableId UnityXRMock_attachAnchor(TrackableId trackableId, Pose pose, TrackingState trackingState, Guid sessionId)
         {
             if (trackableId == TrackableId.invalidId)
             {
@@ -364,7 +373,8 @@ namespace UnityEngine.XR.Mock
 
             var anchorInfo = s_anchors[trackableId];
             anchorInfo.pose = pose;
-            anchorInfo.trackingState = TrackingState.Tracking;
+            anchorInfo.trackingState = trackingState;
+            anchorInfo.sessionId = sessionId;
             return anchorInfo.id;
         }
 
@@ -416,7 +426,7 @@ namespace UnityEngine.XR.Mock
             LogNotImplemented();
         }
 
-        private static void LogNotImplemented([CallerMemberName]string memberName = "")
+        private static void LogNotImplemented([CallerMemberName] string memberName = "")
         {
             Debug.unityLogger.LogError("ar-mock", $"{nameof(NativeApi)}.{memberName} not implemented");
         }

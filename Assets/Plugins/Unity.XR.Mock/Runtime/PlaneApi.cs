@@ -6,32 +6,62 @@ namespace UnityEngine.XR.Mock
 {
     public static class PlaneApi
     {
-        public static TrackableId Add(Pose pose, Vector2 center, Vector2 size, TrackingState trackingState = TrackingState.Tracking)
+        public static TrackableId Add(
+            Pose pose,
+            Vector2 center,
+            Vector2 size,
+            TrackingState trackingState,
+            PlaneAlignment? alignment,
+            PlaneClassification? classification)
         {
             var planeId = NativeApi.NewTrackableId();
             s_TrackingStates[planeId] = trackingState;
-            NativeApi.UnityXRMock_setPlaneData(planeId, pose, center, size, null, 0, trackingState);
+            NativeApi.UnityXRMock_setPlaneData(planeId, pose, center, size, null, trackingState, alignment, classification);
             return planeId;
         }
 
-        public static void Update(TrackableId planeId, Pose pose, Vector2 center, Vector2 size)
+        public static void Update(
+            TrackableId planeId,
+            Pose pose,
+            PlaneAlignment? alignment,
+            PlaneClassification? classification,
+            Vector2 center,
+            Vector2 size)
         {
-            NativeApi.UnityXRMock_setPlaneData(planeId, pose, center, size, null, 0, s_TrackingStates[planeId]);
+            NativeApi.UnityXRMock_setPlaneData(planeId, pose, center, size, null, s_TrackingStates[planeId], alignment, classification);
         }
 
-        public static TrackableId Add(Pose pose, Vector2[] boundaryPoints, TrackingState trackingState = TrackingState.Tracking)
+        public static TrackableId Add(
+            Pose pose,
+            Vector2[] boundaryPoints,
+            TrackingState trackingState,
+            PlaneAlignment? alignment,
+            PlaneClassification? classification,
+            Vector3? center,
+            Vector2? size)
         {
             if (boundaryPoints == null)
                 throw new ArgumentNullException("boundaryPoints");
 
             var planeId = NativeApi.UnityXRMock_createTrackableId(Guid.NewGuid());
-            return AddOrUpdate(planeId, TrackableId.invalidId, pose, boundaryPoints, trackingState);
+            return AddOrUpdate(planeId, TrackableId.invalidId, pose, boundaryPoints, trackingState, alignment, classification, center, size);
         }
 
-        public static TrackableId AddOrUpdate(TrackableId planeId, TrackableId subsumedById, Pose pose, Vector2[] boundaryPoints, TrackingState trackingState = TrackingState.Tracking)
+        public static TrackableId AddOrUpdate(
+            TrackableId planeId,
+            TrackableId subsumedById,
+            Pose pose,
+            Vector2[] boundaryPoints,
+            TrackingState trackingState,
+            PlaneAlignment? alignment,
+            PlaneClassification? classification,
+            Vector3? center,
+            Vector2? size)
         {
             if (boundaryPoints == null)
+            {
                 throw new ArgumentNullException("boundaryPoints");
+            }
 
             if (planeId == TrackableId.invalidId)
             {
@@ -43,7 +73,7 @@ namespace UnityEngine.XR.Mock
                 s_TrackingStates[planeId] = trackingState;
             }
 
-            SetPlaneData(planeId, pose, boundaryPoints);
+            SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
 
             if (subsumedById != TrackableId.invalidId)
             {
@@ -58,9 +88,9 @@ namespace UnityEngine.XR.Mock
             NativeApi.UnityXRMock_subsumedPlane(planeId, subsumedById);
         }
 
-        public static void Update(TrackableId planeId, Pose pose, Vector2[] boundaryPoints)
+        public static void Update(TrackableId planeId, Pose pose, Vector2[] boundaryPoints, PlaneAlignment? alignment, PlaneClassification? classification, Vector3? center, Vector2? size)
         {
-            SetPlaneData(planeId, pose, boundaryPoints);
+            SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
         }
 
         public static void SetTrackingState(TrackableId planeId, TrackingState trackingState)
@@ -95,14 +125,12 @@ namespace UnityEngine.XR.Mock
             return center;
         }
 
-        static void SetPlaneData(TrackableId planeId, Pose pose, Vector2[] boundaryPoints)
+        static void SetPlaneData(TrackableId planeId, Pose pose, Vector2[] boundaryPoints, PlaneAlignment? alignment, PlaneClassification? classification, Vector3? center, Vector2? size)
         {
-            var center = ComputeCenter(boundaryPoints);
-            var size = ComputeSize(boundaryPoints);
+            var _center = center ?? ComputeCenter(boundaryPoints);
+            var _size = size ?? ComputeSize(boundaryPoints);
 
-            NativeApi.UnityXRMock_setPlaneData(planeId, pose, center,
-                size, boundaryPoints, boundaryPoints.Length,
-                s_TrackingStates[planeId]);
+            NativeApi.UnityXRMock_setPlaneData(planeId, pose, _center, _size, boundaryPoints, s_TrackingStates[planeId], alignment, classification);
         }
 
         static Vector2 ComputeSize(Vector2[] boundaryPoints)

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
@@ -59,7 +60,7 @@ namespace UnityEngine.XR.Mock
                 Pose pose,
                 out XRAnchor anchor)
             {
-                var trackableId = NativeApi.UnityXRMock_attachAnchor(TrackableId.invalidId, pose);
+                var trackableId = NativeApi.UnityXRMock_attachAnchor(TrackableId.invalidId, pose, TrackingState.Tracking, Guid.Empty);
                 if (NativeApi.anchors.TryGetValue(trackableId, out NativeApi.AnchorInfo anchorInfo))
                 {
                     anchor = anchorInfo.ToXRAnchor(XRAnchor.defaultValue);
