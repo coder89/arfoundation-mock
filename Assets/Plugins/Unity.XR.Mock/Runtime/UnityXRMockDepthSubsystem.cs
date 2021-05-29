@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine.Scripting;
@@ -41,13 +42,16 @@ namespace UnityEngine.XR.Mock
             {
                 try
                 {
+                    T[] EfficientArray<T>(IEnumerable<DepthApi.DepthInfo> collection, Func<DepthApi.DepthInfo, T> converter)
+                        => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
+
                     return TrackableChanges<XRPointCloud>.CopyFrom(
                         new NativeArray<XRPointCloud>(
-                            DepthApi.added.Select(m => m.ToPointCloud(defaultPointCloud)).ToArray(), allocator),
+                            EfficientArray(DepthApi.added, m => m.ToPointCloud(defaultPointCloud)), allocator),
                         new NativeArray<XRPointCloud>(
-                            DepthApi.updated.Select(m => m.ToPointCloud(defaultPointCloud)).ToArray(), allocator),
+                            EfficientArray(DepthApi.updated, m => m.ToPointCloud(defaultPointCloud)), allocator),
                         new NativeArray<TrackableId>(
-                            DepthApi.removed.Select(m => m.trackableId).ToArray(), allocator),
+                            EfficientArray(DepthApi.removed, m => m.trackableId), allocator),
                         allocator);
                 }
                 finally
