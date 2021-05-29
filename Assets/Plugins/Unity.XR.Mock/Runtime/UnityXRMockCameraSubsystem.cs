@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
 
@@ -29,10 +31,10 @@ namespace UnityEngine.XR.Mock
                 supportsProjectionMatrix = true,
                 supportsTimestamp = true,
                 supportsCameraGrain = true,
-                supportsFaceTrackingAmbientIntensityLightEstimation = false,
-                supportsFaceTrackingHDRLightEstimation = false,
-                supportsWorldTrackingAmbientIntensityLightEstimation = false,
-                supportsWorldTrackingHDRLightEstimation = false
+                supportsFaceTrackingAmbientIntensityLightEstimation = true,
+                supportsFaceTrackingHDRLightEstimation = true,
+                supportsWorldTrackingAmbientIntensityLightEstimation = true,
+                supportsWorldTrackingHDRLightEstimation = true
             };
 
             Register(cinfo);
@@ -69,7 +71,7 @@ namespace UnityEngine.XR.Mock
 
             public override bool TryGetFrame(XRCameraParams cameraParams, out XRCameraFrame cameraFrame)
             {
-                var timestamp = CameraApi.timestamp;
+                var timestamp = CameraApi.timestampNs;
                 if (this.cameraParams != cameraParams
                     || this.timestamp != timestamp
                     || this.screenSize != CameraApi.screenSize
@@ -79,29 +81,19 @@ namespace UnityEngine.XR.Mock
                     {
                         var result = new XRCameraFrameMock();
 
-                        if (CameraApi.timestamp.HasValue)
+                        void SetProperty<T>(XRCameraFrameProperties prop, T? input, ref T output) where T : struct
                         {
-                            result.m_TimestampNs = CameraApi.timestamp.Value;
-                            result.m_Properties = result.m_Properties | XRCameraFrameProperties.Timestamp;
+                            if (input.HasValue)
+                            {
+                                output = input.Value;
+                                result.m_Properties = result.m_Properties | prop;
+                            }
                         }
 
-                        if (CameraApi.averageBrightness.HasValue)
-                        {
-                            result.m_AverageColorTemperature = CameraApi.averageBrightness.Value;
-                            result.m_Properties = result.m_Properties | XRCameraFrameProperties.AverageBrightness;
-                        }
-
-                        if (CameraApi.averageColorTemperature.HasValue)
-                        {
-                            result.m_AverageColorTemperature = CameraApi.averageColorTemperature.Value;
-                            result.m_Properties = result.m_Properties | XRCameraFrameProperties.AverageColorTemperature;
-                        }
-
-                        if (CameraApi.colorCorrection.HasValue)
-                        {
-                            result.m_ColorCorrection = CameraApi.colorCorrection.Value;
-                            result.m_Properties = result.m_Properties | XRCameraFrameProperties.ColorCorrection;
-                        }
+                        SetProperty(XRCameraFrameProperties.Timestamp, CameraApi.timestampNs, ref result.m_TimestampNs);
+                        SetProperty(XRCameraFrameProperties.AverageBrightness, CameraApi.averageBrightness, ref result.m_AverageColorTemperature);
+                        SetProperty(XRCameraFrameProperties.AverageColorTemperature, CameraApi.averageColorTemperature, ref result.m_AverageColorTemperature);
+                        SetProperty(XRCameraFrameProperties.ColorCorrection, CameraApi.colorCorrection, ref result.m_ColorCorrection);
 
                         if (CameraApi.projectionMatrix.HasValue)
                         {
@@ -125,13 +117,18 @@ namespace UnityEngine.XR.Mock
                             result.m_Properties = result.m_Properties | XRCameraFrameProperties.ProjectionMatrix;
                         }
 
-                        if (CameraApi.displayMatrix.HasValue)
-                        {
-                            result.m_DisplayMatrix = CameraApi.displayMatrix.Value;
-                            result.m_Properties = result.m_Properties | XRCameraFrameProperties.DisplayMatrix;
-                        }
+                        SetProperty(XRCameraFrameProperties.DisplayMatrix, CameraApi.displayMatrix, ref result.m_DisplayMatrix);
+                        SetProperty(XRCameraFrameProperties.AverageIntensityInLumens, CameraApi.averageIntensityInLumens, ref result.m_AverageIntensityInLumens);
+                        SetProperty(XRCameraFrameProperties.ExposureDuration, CameraApi.exposureDuration, ref result.m_ExposureDuration);
+                        SetProperty(XRCameraFrameProperties.ExposureOffset, CameraApi.exposureOffset, ref result.m_ExposureOffset);
+                        SetProperty(XRCameraFrameProperties.MainLightIntensityLumens, CameraApi.mainLightIntensityLumens, ref result.m_MainLightIntensityLumens);
+                        SetProperty(XRCameraFrameProperties.MainLightColor, CameraApi.mainLightColor, ref result.m_MainLightColor);
+                        SetProperty(XRCameraFrameProperties.MainLightDirection, CameraApi.mainLightDirection, ref result.m_MainLightDirection);
+                        SetProperty(XRCameraFrameProperties.AmbientSphericalHarmonics, CameraApi.ambientSphericalHarmonics, ref result.m_AmbientSphericalHarmonics);
+                        SetProperty(XRCameraFrameProperties.CameraGrain, CameraApi.cameraGrain, ref result.m_CameraGrain);
+                        SetProperty(XRCameraFrameProperties.NoiseIntensity, CameraApi.noiseIntensity, ref result.m_NoiseIntensity);
 
-                        result.m_TrackingState = TrackingState.Tracking;
+                        result.m_TrackingState = CameraApi.trackingState;
                         result.m_NativePtr = IntPtr.Zero;
 
                         result.Convert(out cameraFrame);
@@ -234,6 +231,81 @@ namespace UnityEngine.XR.Mock
             /// The set of all flags indicating which properties are included in the frame.
             /// </value>
             public XRCameraFrameProperties m_Properties;
+
+            /// <summary>
+            /// The estimated intensity, in lumens, of the scene.
+            /// </summary>
+            /// <value>
+            /// The estimated intensity, in lumens, of the scene.
+            /// </value>
+            public float m_AverageIntensityInLumens;
+
+            /// <summary>
+            /// The camera exposure duration, in seconds with sub-millisecond precision, of the scene.
+            /// </summary>
+            /// <value>
+            /// The camera exposure duration, in seconds with sub-millisecond precision, of the scene.
+            /// </value>
+            public double m_ExposureDuration;
+
+            /// <summary>
+            /// The camera exposure offset of the scene for lighting scaling
+            /// </summary>
+            /// <value>
+            /// The camera exposure offset of the scene for lighting scaling
+            /// </value>
+            public float m_ExposureOffset;
+
+            /// <summary>
+            /// The estimated, intensity in lumens of the most influential, real-world light in the scene.
+            /// </summary>
+            /// <value>
+            /// The estimated, intensity in lumens of the most influential, real-world light in the scene.
+            /// </value>
+            public float m_MainLightIntensityLumens;
+
+            /// <summary>
+            /// The estimated, color of the most influential, real-world light in the scene.
+            /// </summary>
+            /// <value>
+            /// The estimated, color of the most influential, real-world light in the scene.
+            /// </value>
+            public Color m_MainLightColor;
+
+            /// <summary>
+            /// The estimated direction of the most influential, real-world light in the scene.
+            /// </summary>
+            /// <value>
+            /// The estimated direction of the most influential, real-world light in the scene.
+            /// </value>
+            public Vector3 m_MainLightDirection;
+
+            /// <summary>
+            /// The ambient spherical harmonic coefficients that represent lighting in the real-world.
+            /// </summary>
+            /// <value>
+            /// The ambient spherical harmonic coefficients that represent lighting in the real-world.
+            /// </value>
+            /// <remarks>
+            /// See <see href="https://docs.unity3d.com/ScriptReference/Rendering.SphericalHarmonicsL2.html">here</see> for further details.
+            /// </remarks>
+            public SphericalHarmonicsL2 m_AmbientSphericalHarmonics;
+
+            /// <summary>
+            /// A texture that simulates the camera's noise.
+            /// </summary>
+            /// <value>
+            /// A texture that simulates the camera's noise.
+            /// </value>
+            public XRTextureDescriptor m_CameraGrain;
+
+            /// <summary>
+            /// The level of intensity of camera grain noise in a scene.
+            /// </summary>
+            /// <value>
+            /// The level of intensity of camera grain noise in a scene.
+            /// </value>
+            public float m_NoiseIntensity;
 
             public unsafe void Convert(out XRCameraFrame target)
             {

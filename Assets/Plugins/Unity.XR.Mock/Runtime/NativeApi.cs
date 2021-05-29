@@ -288,32 +288,6 @@ namespace UnityEngine.XR.Mock
 
         #endregion
 
-        public static void UnityXRMock_setDepthData(
-            Vector3[] positions, float[] confidences, int count)
-        {
-            // TODO LogNotImplemented();
-        }
-
-        #region CameraApi.projectionMatrix
-
-        private static Matrix4x4? projectionMatrix;
-
-        public static Matrix4x4? UnityXRMock_getProjectionMatrix() => projectionMatrix;
-
-        public static void UnityXRMock_setProjectionMatrix(Matrix4x4 projectionMatrix, Matrix4x4 inverseProjectionMatrix, bool hasValue)
-        {
-            if (hasValue)
-            {
-                NativeApi.projectionMatrix = projectionMatrix;
-            }
-            else
-            {
-                NativeApi.projectionMatrix = null;
-            }
-        }
-
-        #endregion
-
         private static Func<TrackableId> s_trackableIdGenerator;
 
         public static Func<TrackableId> UnityXRMock_getTrackableIdGenerator()

@@ -74,6 +74,8 @@ namespace UnityEngine.XR.Mock.Example
                 m_Positions[i] = Random.insideUnitSphere * m_Radius + transform.position;
             }
 
+            var trackableId = DepthApi.Add(Pose.identity, ARSubsystems.TrackingState.Tracking);
+
             while (enabled)
             {
                 for (int i = 0; i < m_Positions.Length; ++i)
@@ -82,7 +84,7 @@ namespace UnityEngine.XR.Mock.Example
                         m_Positions[i] += Random.insideUnitSphere * Time.deltaTime * m_MovementSpeed;
                 }
 
-                DepthApi.SetDepthData(GeneratePoints(), null);
+                DepthApi.SetDepthData(trackableId, GeneratePoints(), null);
                 yield return null;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
@@ -29,25 +30,38 @@ namespace UnityEngine.XR.Mock
 
             public override void Start() { }
 
-            public override void Destroy() { }
-
             public override void Stop() { }
+
+            public override void Destroy()
+            {
+                DepthApi.reset();
+            }
 
             public override TrackableChanges<XRPointCloud> GetChanges(XRPointCloud defaultPointCloud, Allocator allocator)
             {
-                return TrackableChanges<XRPointCloud>.CopyFrom(
-                        new NativeArray<XRPointCloud>(Array.Empty<XRPointCloud>(), allocator),
-                        new NativeArray<XRPointCloud>(Array.Empty<XRPointCloud>(), allocator),
-                        new NativeArray<TrackableId>(Array.Empty<TrackableId>(), allocator),
+                try
+                {
+                    return TrackableChanges<XRPointCloud>.CopyFrom(
+                        new NativeArray<XRPointCloud>(
+                            DepthApi.added.Select(m => m.ToPointCloud(defaultPointCloud)).ToArray(), allocator),
+                        new NativeArray<XRPointCloud>(
+                            DepthApi.updated.Select(m => m.ToPointCloud(defaultPointCloud)).ToArray(), allocator),
+                        new NativeArray<TrackableId>(
+                            DepthApi.removed.Select(m => m.trackableId).ToArray(), allocator),
                         allocator);
+                }
+                finally
+                {
+                    DepthApi.consumedChanges();
+                }
             }
 
             public override XRPointCloudData GetPointCloudData(TrackableId trackableId, Allocator allocator)
             {
-                return new XRPointCloudData()
-                {
-
-                };
+                var tmp = DepthApi.datas.FirstOrDefault(m => m.Key.trackableId == trackableId);
+                return (tmp.Key == null
+                    ? new XRPointCloudData()
+                    : tmp.Value.ToPointCloudData());
             }
         }
     }
