@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine.Scripting;
 using UnityEngine.XR.ARSubsystems;
@@ -35,7 +37,7 @@ namespace UnityEngine.XR.Mock
 
             public override void Destroy()
             {
-                NativeApi.UnityXRMock_planesReset();
+                PlaneApi.Reset();
             }
 
             public override void Stop() { }
@@ -53,7 +55,7 @@ namespace UnityEngine.XR.Mock
                 Allocator allocator,
                 ref NativeArray<Vector2> boundary)
             {
-                if (NativeApi.planes.TryGetValue(trackableId, out NativeApi.PlaneInfo planeInfo) &&
+                if (PlaneApi.planes.TryGetValue(trackableId, out PlaneApi.PlaneInfo planeInfo) &&
                     planeInfo.boundaryPoints != null &&
                     planeInfo.boundaryPoints.Length > 0)
                 {
@@ -72,18 +74,21 @@ namespace UnityEngine.XR.Mock
             {
                 try
                 {
+                    T[] EfficientArray<T>(IEnumerable<PlaneApi.PlaneInfo> collection, Func<PlaneApi.PlaneInfo, T> converter)
+                        => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
+
                     return TrackableChanges<BoundedPlane>.CopyFrom(
                         new NativeArray<BoundedPlane>(
-                            NativeApi.addedPlanes.Select(m => m.ToBoundedPlane(defaultPlane)).ToArray(), allocator),
+                            EfficientArray(PlaneApi.addedPlanes, m => m.ToBoundedPlane(defaultPlane)), allocator),
                         new NativeArray<BoundedPlane>(
-                            NativeApi.updatedPlanes.Select(m => m.ToBoundedPlane(defaultPlane)).ToArray(), allocator),
+                            EfficientArray(PlaneApi.updatedPlanes, m => m.ToBoundedPlane(defaultPlane)), allocator),
                         new NativeArray<TrackableId>(
-                            NativeApi.removedPlanes.Select(m => m.id).ToArray(), allocator),
+                            EfficientArray(PlaneApi.removedPlanes, m => m.id), allocator),
                         allocator);
                 }
                 finally
                 {
-                    NativeApi.UnityXRMock_consumedPlaneChanges();
+                    PlaneApi.ConsumedChanges();
                 }
             }
         }
