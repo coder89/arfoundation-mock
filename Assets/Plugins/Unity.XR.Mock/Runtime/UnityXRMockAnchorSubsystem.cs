@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine.Scripting;
@@ -30,7 +31,7 @@ namespace UnityEngine.XR.Mock
 
             public override void Destroy()
             {
-                NativeApi.UnityXRMock_anchorReset();
+                AnchorApi.Reset();
             }
 
             public override void Stop() { }
@@ -41,18 +42,21 @@ namespace UnityEngine.XR.Mock
             {
                 try
                 {
+                    T[] EfficientArray<T>(IEnumerable<AnchorApi.AnchorInfo> collection, Func<AnchorApi.AnchorInfo, T> converter)
+                        => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
+
                     return TrackableChanges<XRAnchor>.CopyFrom(
                         new NativeArray<XRAnchor>(
-                            NativeApi.addedAnchors.Select(m => m.ToXRAnchor(defaultAnchor)).ToArray(), allocator),
+                            EfficientArray(AnchorApi.addedAnchors, m => m.ToXRAnchor(defaultAnchor)), allocator),
                         new NativeArray<XRAnchor>(
-                            NativeApi.updatedAnchors.Select(m => m.ToXRAnchor(defaultAnchor)).ToArray(), allocator),
+                            EfficientArray(AnchorApi.updatedAnchors, m => m.ToXRAnchor(defaultAnchor)), allocator),
                         new NativeArray<TrackableId>(
-                            NativeApi.removedAnchors.Select(m => m.id).ToArray(), allocator),
+                            EfficientArray(AnchorApi.removedAnchors, m => m.id), allocator),
                         allocator);
                 }
                 finally
                 {
-                    NativeApi.UnityXRMock_consumedAnchorChanges();
+                    AnchorApi.ConsumedChanges();
                 }
             }
 
@@ -60,8 +64,8 @@ namespace UnityEngine.XR.Mock
                 Pose pose,
                 out XRAnchor anchor)
             {
-                var trackableId = NativeApi.UnityXRMock_attachAnchor(TrackableId.invalidId, pose, TrackingState.Tracking, Guid.Empty);
-                if (NativeApi.anchors.TryGetValue(trackableId, out NativeApi.AnchorInfo anchorInfo))
+                var trackableId = AnchorApi.Attach(pose, TrackingState.Tracking, Guid.Empty);
+                if (AnchorApi.anchors.TryGetValue(trackableId, out AnchorApi.AnchorInfo anchorInfo))
                 {
                     anchor = anchorInfo.ToXRAnchor(XRAnchor.defaultValue);
                     return true;
@@ -81,9 +85,9 @@ namespace UnityEngine.XR.Mock
 
             public override bool TryRemoveAnchor(TrackableId anchorId)
             {
-                if (NativeApi.anchors.TryGetValue(anchorId, out NativeApi.AnchorInfo refPointInfo))
+                if (AnchorApi.anchors.TryGetValue(anchorId, out AnchorApi.AnchorInfo refPointInfo))
                 {
-                    NativeApi.UnityXRMock_removeAnchor(anchorId);
+                    AnchorApi.Remove(anchorId);
                     return true;
                 }
 
