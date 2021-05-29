@@ -9,6 +9,7 @@ namespace UnityEngine.XR.Mock
         private static List<XRSessionSubsystemDescriptor> s_SessionSubsystemDescriptors = new List<XRSessionSubsystemDescriptor>();
         private static List<XRCameraSubsystemDescriptor> s_CameraSubsystemDescriptors = new List<XRCameraSubsystemDescriptor>();
         private static List<XRDepthSubsystemDescriptor> s_DepthSubsystemDescriptors = new List<XRDepthSubsystemDescriptor>();
+        private static List<XROcclusionSubsystemDescriptor> s_OcclusionSubsystemDescriptors = new List<XROcclusionSubsystemDescriptor>();
         private static List<XRPlaneSubsystemDescriptor> s_PlaneSubsystemDescriptors = new List<XRPlaneSubsystemDescriptor>();
         private static List<XRAnchorSubsystemDescriptor> s_AnchorSubsystemDescriptors = new List<XRAnchorSubsystemDescriptor>();
         private static List<XRRaycastSubsystemDescriptor> s_RaycastSubsystemDescriptors = new List<XRRaycastSubsystemDescriptor>();
@@ -18,6 +19,7 @@ namespace UnityEngine.XR.Mock
         public XRSessionSubsystem sessionSubsystem => this.GetLoadedSubsystem<XRSessionSubsystem>();
         public XRCameraSubsystem cameraSubsystem => this.GetLoadedSubsystem<XRCameraSubsystem>();
         public XRDepthSubsystem depthSubsystem => this.GetLoadedSubsystem<XRDepthSubsystem>();
+        public XROcclusionSubsystem occlusionSubsystem => this.GetLoadedSubsystem<XROcclusionSubsystem>();
         public XRPlaneSubsystem planeSubsystem => this.GetLoadedSubsystem<XRPlaneSubsystem>();
         public XRAnchorSubsystem anchorSubsystem => this.GetLoadedSubsystem<XRAnchorSubsystem>();
         public XRRaycastSubsystem raycastSubsystem => this.GetLoadedSubsystem<XRRaycastSubsystem>();
@@ -36,6 +38,7 @@ namespace UnityEngine.XR.Mock
             CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, typeof(UnityXRMockSessionSubsystem).FullName);
             CreateSubsystem<XRCameraSubsystemDescriptor, XRCameraSubsystem>(s_CameraSubsystemDescriptors, typeof(UnityXRMockCameraSubsystem).FullName);
             CreateSubsystem<XRDepthSubsystemDescriptor, XRDepthSubsystem>(s_DepthSubsystemDescriptors, typeof(UnityXRMockDepthSubsystem).FullName);
+            CreateSubsystem<XROcclusionSubsystemDescriptor, XROcclusionSubsystem>(s_OcclusionSubsystemDescriptors, typeof(UnityXRMockOcclusionSubsystem).FullName);
             CreateSubsystem<XRPlaneSubsystemDescriptor, XRPlaneSubsystem>(s_PlaneSubsystemDescriptors, typeof(UnityXRMockPlaneSubsystem).FullName);
             CreateSubsystem<XRAnchorSubsystemDescriptor, XRAnchorSubsystem>(s_AnchorSubsystemDescriptors, typeof(UnityXRMockAnchorSubsystem).FullName);
             CreateSubsystem<XRRaycastSubsystemDescriptor, XRRaycastSubsystem>(s_RaycastSubsystemDescriptors, typeof(UnityXRMockRaycastSubsystem).FullName);
@@ -58,6 +61,7 @@ namespace UnityEngine.XR.Mock
                 StartSubsystem<XRSessionSubsystem>();
                 StartSubsystem<XRCameraSubsystem>();
                 StartSubsystem<XRDepthSubsystem>();
+                StartSubsystem<XROcclusionSubsystem>();
                 StartSubsystem<XRPlaneSubsystem>();
                 StartSubsystem<XRAnchorSubsystem>();
                 StartSubsystem<XRRaycastSubsystem>();
@@ -76,6 +80,7 @@ namespace UnityEngine.XR.Mock
                 StopSubsystem<XRRaycastSubsystem>();
                 StopSubsystem<XRAnchorSubsystem>();
                 StopSubsystem<XRPlaneSubsystem>();
+                StopSubsystem<XROcclusionSubsystem>();
                 StopSubsystem<XRDepthSubsystem>();
                 StopSubsystem<XRCameraSubsystem>();
                 StopSubsystem<XRSessionSubsystem>();
@@ -91,6 +96,7 @@ namespace UnityEngine.XR.Mock
             DestroySubsystem<XRRaycastSubsystem>();
             DestroySubsystem<XRAnchorSubsystem>();
             DestroySubsystem<XRPlaneSubsystem>();
+            DestroySubsystem<XROcclusionSubsystem>();
             DestroySubsystem<XRDepthSubsystem>();
             DestroySubsystem<XRCameraSubsystem>();
             DestroySubsystem<XRSessionSubsystem>();
