@@ -7,8 +7,7 @@ namespace UnityEngine.XR.Mock
 {
     public static class OcclusionApi
     {
-        public static readonly List<string> enabledKeywords = new List<string>();
-        public static readonly List<string> disabledKeywords = new List<string>();
+        public static Material material;
         private static TextureInfo[] textures = Array.Empty<TextureInfo>();
         private static TextureInfo environmentDepth;
         private static TextureInfo environmentDepthConfidence;
@@ -18,20 +17,54 @@ namespace UnityEngine.XR.Mock
         public static TextureInfo[] GetTextures() => textures;
 
         public static void SetTextures(
-            List<Texture2D> textures,
-            List<int> propertyNameIds,
-            List<string> enabledMaterialKeywords,
-            List<string> disabledMaterialKeywords)
+            Texture2D environmentDepth,
+            Texture2D environmentDepthConfidence,
+            Texture2D humanDepth,
+            Texture2D humanStencil)
         {
-            OcclusionApi.textures = textures.Select((m, i) => new TextureInfo
-            {
-                texture = m,
-                depth = 1,
-                propertyNameId = propertyNameIds[i]
-            }).ToArray();
+            var tmp = new List<TextureInfo>();
 
-            enabledKeywords.AddRange(enabledMaterialKeywords);
-            disabledKeywords.AddRange(disabledMaterialKeywords);
+            if (environmentDepth != null)
+            {
+                tmp.Add(new TextureInfo()
+                {
+                    texture = environmentDepth,
+                    depth = 1,
+                    propertyNameId = UnityXRMockOcclusionSubsystem.k_TextureEnvironmentDepthPropertyId
+                });
+            }
+
+            if (environmentDepthConfidence != null)
+            {
+                tmp.Add(new TextureInfo()
+                {
+                    texture = environmentDepthConfidence,
+                    depth = 1,
+                    propertyNameId = UnityXRMockOcclusionSubsystem.k_TextureEnvironmentDepthConfidencePropertyId
+                });
+            }
+
+            if (humanDepth != null)
+            {
+                tmp.Add(new TextureInfo()
+                {
+                    texture = humanDepth,
+                    depth = 1,
+                    propertyNameId = UnityXRMockOcclusionSubsystem.k_TextureHumanDepthPropertyId
+                });
+            }
+
+            if (humanStencil != null)
+            {
+                tmp.Add(new TextureInfo()
+                {
+                    texture = humanStencil,
+                    depth = 1,
+                    propertyNameId = UnityXRMockOcclusionSubsystem.k_TextureHumanStencilPropertyId
+                });
+            }
+
+            textures = tmp.ToArray();
         }
 
         public static bool TryGetEnvironmentDepth(out TextureInfo t) => (t = environmentDepth) != null;

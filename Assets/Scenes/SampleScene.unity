@@ -344,13 +344,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.92387956
+      objectReference: {fileID: 0}
+    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.38268343
+      objectReference: {fileID: 0}
+    - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 8447533865485947049, guid: 7549d757166f863418e86fb69b8c6092,
         type: 3}
@@ -528,6 +538,7 @@ GameObject:
   - component: {fileID: 855304133}
   - component: {fileID: 855304135}
   - component: {fileID: 855304134}
+  - component: {fileID: 855304136}
   m_Layer: 0
   m_Name: Mock Camera
   m_TagString: Untagged
@@ -558,7 +569,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 855304132}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a39404920e88d19469c518e0611ed720, type: 3}
+  m_Script: {fileID: 11500000, guid: fedbd2af1e1a124488adc6248c9587ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ARCamera: {fileID: 1705326509}
@@ -583,6 +594,23 @@ MonoBehaviour:
   m_KeyUp: 113
   m_KeyDown: 101
   m_LookMouseButton: 1
+--- !u!114 &855304136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 855304132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd9816ba96813142b3d283ca6e4b061, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  environmentDepth: {fileID: 0}
+  environmentDepthConfidence: {fileID: 0}
+  humanDepth: {fileID: 0}
+  humanStencil: {fileID: 0}
+  material: {fileID: 2100000, guid: a7d9caf55ebcd654e8042bd79348f069, type: 2}
 --- !u!1 &874057861
 GameObject:
   m_ObjectHideFlags: 0

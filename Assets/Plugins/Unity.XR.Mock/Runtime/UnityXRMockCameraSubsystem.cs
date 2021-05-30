@@ -46,9 +46,27 @@ namespace UnityEngine.XR.Mock
             private long? timestamp;
             private Vector2? screenSize;
             private ScreenOrientation? screenOrientation;
+            private Material m_CameraMaterial;
+            private Texture2D m_texture;
+            private static int count = 0;
 
             [Preserve]
-            public MockProvider() { }
+            public MockProvider()
+            {
+                if (count++ % 3 == 0)
+                {
+                    //m_CameraMaterial = CreateCameraMaterial("Unlit/ARKitBackground");
+                    m_texture = new Texture2D(100, 100, TextureFormat.ARGB32, false);
+
+                    for (int x = 0; x < 100; ++x)
+                        for (int y = 0; y < 100; ++y)
+                            m_texture.SetPixel(x, y, Color.red);
+
+                    m_texture.Apply();
+                }
+            }
+
+            public override Material cameraMaterial => OcclusionApi.material;//  m_CameraMaterial;
 
             public override bool permissionGranted => CameraApi.permissionGranted;
 
@@ -145,6 +163,39 @@ namespace UnityEngine.XR.Mock
 
                 cameraFrame = default;
                 return false;
+            }
+
+            public unsafe override NativeArray<XRTextureDescriptor> GetTextureDescriptors(XRTextureDescriptor defaultDescriptor, Allocator allocator)
+            {
+                var array = new XRTextureDescriptor[] { defaultDescriptor };
+                fixed (void* arrayPtr = &array[0])
+                {
+                    return NativeCopyUtility.PtrToNativeArrayWithDefault(
+                        defaultDescriptor,
+                        arrayPtr,
+                        sizeof(XRTextureDescriptor),
+                        array.Length,
+                        allocator);
+                }
+
+                //return new NativeArray<XRTextureDescriptor>(
+                //    new XRTextureDescriptor[]
+                //    {
+                //        defaultDescriptor,
+                //        //new XRTextureDescriptorMock()
+                //        //{
+                //        //    m_NativeTexture = IntPtr.Zero,// m_texture.GetNativeTexturePtr(),
+                //        //    m_PropertyNameId = Shader.PropertyToID("_MainTex"),
+                //        //    m_Depth=1,
+                //        //    m_Dimension = m_texture.dimension,
+                //        //    m_Format = m_texture.format,
+                //        //    m_Width = m_texture.width,
+                //        //    m_Height = m_texture.height,
+                //        //    m_MipmapCount = m_texture.mipmapCount
+                //        //}.Convert()
+                //    }, allocator);
+
+                //  return base.GetTextureDescriptors(default, allocator);
             }
 
             private void ResetState()
@@ -313,6 +364,94 @@ namespace UnityEngine.XR.Mock
                 fixed (XRCameraFrameMock* selfPtr = &this)
                 {
                     UnsafeUtility.MemCpy(targetPtr, selfPtr, sizeof(XRCameraFrame));
+                }
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct XRTextureDescriptorMock
+        {
+            /// <summary>
+            /// A pointer to the native texture object.
+            /// </summary>
+            /// <value>
+            /// A pointer to the native texture object.
+            /// </value>
+            public IntPtr m_NativeTexture;
+
+            /// <summary>
+            /// Specifies the width dimension of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The width of the native texture object.
+            /// </value>
+            public int m_Width;
+
+            /// <summary>
+            /// Specifies the height dimension of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The height of the native texture object.
+            /// </value>
+            public int m_Height;
+
+            /// <summary>
+            /// Specifies the number of mipmap levels in the native texture object.
+            /// </summary>
+            /// <value>
+            /// The number of mipmap levels in the native texture object.
+            /// </value>
+            public int m_MipmapCount;
+
+            /// <summary>
+            /// Specifies the texture format of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The format of the native texture object.
+            /// </value>
+            public TextureFormat m_Format;
+
+            /// <summary>
+            /// Specifies the unique shader property name ID for the material shader texture.
+            /// </summary>
+            /// <value>
+            /// The unique shader property name ID for the material shader texture.
+            /// </value>
+            /// <remarks>
+            /// Use the static method <c>Shader.PropertyToID(string name)</c> to get the unique identifier.
+            /// </remarks>
+            public int m_PropertyNameId;
+
+            /// <summary>
+            /// This specifies the depth dimension of the native texture. For a 3D texture, depth would be greater than zero.
+            /// For any other kind of valid texture, depth is one.
+            /// </summary>
+            /// <value>
+            /// The depth dimension of the native texture object.
+            /// </value>
+            public int m_Depth;
+
+            /// <summary>
+            /// Specifies the [texture dimension](https://docs.unity3d.com/ScriptReference/Rendering.TextureDimension.html) of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The texture dimension of the native texture object.
+            /// </value>
+            public TextureDimension m_Dimension;
+
+            public unsafe XRTextureDescriptor Convert()
+            {
+                var result = new XRTextureDescriptor();
+                Convert(out result);
+                return result;
+            }
+
+            public unsafe void Convert(out XRTextureDescriptor target)
+            {
+                fixed (XRTextureDescriptor* targetPtr = &target)
+                fixed (XRTextureDescriptorMock* selfPtr = &this)
+                {
+                    UnsafeUtility.MemCpy(targetPtr, selfPtr, sizeof(XRTextureDescriptor));
                 }
             }
         }

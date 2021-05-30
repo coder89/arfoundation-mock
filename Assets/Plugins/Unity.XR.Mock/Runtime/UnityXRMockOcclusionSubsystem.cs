@@ -13,6 +13,91 @@ namespace UnityEngine.XR.Mock
     [Preserve]
     public sealed class UnityXRMockOcclusionSubsystem : XROcclusionSubsystem
     {
+        /// <summary>
+        /// The shader property name for the human segmentation stencil texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name for the human segmentation stencil texture.
+        /// </value>
+        internal const string k_TextureHumanStencilPropertyName = "_HumanStencil";
+
+        /// <summary>
+        /// The shader property name for the human segmentation depth texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name for the human segmentation depth texture.
+        /// </value>
+        internal const string k_TextureHumanDepthPropertyName = "_HumanDepth";
+
+        /// <summary>
+        /// The shader property name for the environment depth texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name for the environment depth texture.
+        /// </value>
+        internal const string k_TextureEnvironmentDepthPropertyName = "_EnvironmentDepth";
+
+        /// <summary>
+        /// The shader property name for the environment depth confidence texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name for the environment depth confidence texture.
+        /// </value>
+        internal const string k_TextureEnvironmentDepthConfidencePropertyName = "_EnvironmentDepthConfidence";
+
+        /// <summary>
+        /// The shader keyword for enabling human segmentation rendering.
+        /// </summary>
+        /// <value>
+        /// The shader keyword for enabling human segmentation rendering.
+        /// </value>
+        internal const string k_HumanEnabledMaterialKeyword = "MOCK_HUMAN_SEGMENTATION_ENABLED";
+
+        /// <summary>
+        /// The shader keyword for enabling environment depth rendering.
+        /// </summary>
+        /// <value>
+        /// The shader keyword for enabling environment depth rendering.
+        /// </value>
+        internal const string k_EnvironmentDepthEnabledMaterialKeyword = "ARCORE_ENVIRONMENT_DEPTH_ENABLED";
+
+        /// <summary>
+        /// The shader property name identifier for the human segmentation stencil texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name identifier for the human segmentation stencil texture.
+        /// </value>
+        internal static readonly int k_TextureHumanStencilPropertyId = Shader.PropertyToID(k_TextureHumanStencilPropertyName);
+
+        /// <summary>
+        /// The shader property name identifier for the human segmentation depth texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name identifier for the human segmentation depth texture.
+        /// </value>
+        internal static readonly int k_TextureHumanDepthPropertyId = Shader.PropertyToID(k_TextureHumanDepthPropertyName);
+
+        /// <summary>
+        /// The shader property name identifier for the environment depth texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name identifier for the environment depth texture.
+        /// </value>
+        internal static readonly int k_TextureEnvironmentDepthPropertyId = Shader.PropertyToID(k_TextureEnvironmentDepthPropertyName);
+
+        /// <summary>
+        /// The shader property name identifier for the environment depth texture.
+        /// </summary>
+        /// <value>
+        /// The shader property name identifier for the environment depth texture.
+        /// </value>
+        internal static readonly int k_TextureEnvironmentDepthConfidencePropertyId = Shader.PropertyToID(k_TextureEnvironmentDepthConfidencePropertyName);
+
+        internal static readonly List<string> m_NoKeywords = new List<string>();
+        internal static readonly List<string> m_HumanEnabledMaterialKeywords = new List<string>() { k_HumanEnabledMaterialKeyword };
+        internal static readonly List<string> m_EnvironmentDepthEnabledMaterialKeywords = new List<string>() { k_EnvironmentDepthEnabledMaterialKeyword };
+        internal static readonly List<string> m_AllDisabledMaterialKeywords = new List<string>() { k_HumanEnabledMaterialKeyword, k_EnvironmentDepthEnabledMaterialKeyword };
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         internal static void Register()
         {
@@ -72,20 +157,42 @@ namespace UnityEngine.XR.Mock
 
             public override NativeArray<XRTextureDescriptor> GetTextureDescriptors(XRTextureDescriptor defaultDescriptor, Allocator allocator)
             {
-                var currentDescriptors = OcclusionApi.GetTextures();
-                if (previousDescriptors != currentDescriptors)
-                {
-                    descriptors = currentDescriptors.Select(m => GetTextureDescriptor(m).Convert()).ToArray();
-                    previousDescriptors = currentDescriptors;
-                }
-
-                return new NativeArray<XRTextureDescriptor>(descriptors, allocator);
+                //var currentDescriptors = OcclusionApi.GetTextures();
+                //if (previousDescriptors != currentDescriptors)
+                //{
+                //    descriptors = currentDescriptors.Select(m => GetTextureDescriptor(m).Convert()).ToArray();
+                //    previousDescriptors = currentDescriptors;
+                //}
+                //
+                //return new NativeArray<XRTextureDescriptor>(descriptors, allocator);
+                return base.GetTextureDescriptors(defaultDescriptor, allocator);
             }
 
             public override void GetMaterialKeywords(out List<string> enabledKeywords, out List<string> disabledKeywords)
             {
-                enabledKeywords = OcclusionApi.enabledKeywords;
-                disabledKeywords = OcclusionApi.disabledKeywords;
+                var enableEnvironment = (OcclusionApi.TryGetEnvironmentDepth(out var environmentDepth) && environmentDepth != null);
+                var enableHuman = (OcclusionApi.TryGetHumanDepth(out var humanDepth) && humanDepth != null);
+
+                if (enableEnvironment && enableHuman)
+                {
+                    enabledKeywords = m_AllDisabledMaterialKeywords;
+                    disabledKeywords = m_NoKeywords;
+                }
+                else if (enableEnvironment)
+                {
+                    enabledKeywords = m_EnvironmentDepthEnabledMaterialKeywords;
+                    disabledKeywords = m_HumanEnabledMaterialKeywords;
+                }
+                else if (enableHuman)
+                {
+                    enabledKeywords = m_HumanEnabledMaterialKeywords;
+                    disabledKeywords = m_EnvironmentDepthEnabledMaterialKeywords;
+                }
+                else
+                {
+                    enabledKeywords = m_NoKeywords;
+                    disabledKeywords = m_AllDisabledMaterialKeywords;
+                }
             }
 
             /* TODO */
@@ -160,91 +267,92 @@ namespace UnityEngine.XR.Mock
                 };
             }
 
-            [StructLayout(LayoutKind.Sequential)]
-            public struct XRTextureDescriptorMock
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct XRTextureDescriptorMock
+        {
+            /// <summary>
+            /// A pointer to the native texture object.
+            /// </summary>
+            /// <value>
+            /// A pointer to the native texture object.
+            /// </value>
+            public IntPtr m_NativeTexture;
+
+            /// <summary>
+            /// Specifies the width dimension of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The width of the native texture object.
+            /// </value>
+            public int m_Width;
+
+            /// <summary>
+            /// Specifies the height dimension of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The height of the native texture object.
+            /// </value>
+            public int m_Height;
+
+            /// <summary>
+            /// Specifies the number of mipmap levels in the native texture object.
+            /// </summary>
+            /// <value>
+            /// The number of mipmap levels in the native texture object.
+            /// </value>
+            public int m_MipmapCount;
+
+            /// <summary>
+            /// Specifies the texture format of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The format of the native texture object.
+            /// </value>
+            public TextureFormat m_Format;
+
+            /// <summary>
+            /// Specifies the unique shader property name ID for the material shader texture.
+            /// </summary>
+            /// <value>
+            /// The unique shader property name ID for the material shader texture.
+            /// </value>
+            /// <remarks>
+            /// Use the static method <c>Shader.PropertyToID(string name)</c> to get the unique identifier.
+            /// </remarks>
+            public int m_PropertyNameId;
+
+            /// <summary>
+            /// This specifies the depth dimension of the native texture. For a 3D texture, depth would be greater than zero.
+            /// For any other kind of valid texture, depth is one.
+            /// </summary>
+            /// <value>
+            /// The depth dimension of the native texture object.
+            /// </value>
+            public int m_Depth;
+
+            /// <summary>
+            /// Specifies the [texture dimension](https://docs.unity3d.com/ScriptReference/Rendering.TextureDimension.html) of the native texture object.
+            /// </summary>
+            /// <value>
+            /// The texture dimension of the native texture object.
+            /// </value>
+            public TextureDimension m_Dimension;
+
+            public unsafe XRTextureDescriptor Convert()
             {
-                /// <summary>
-                /// A pointer to the native texture object.
-                /// </summary>
-                /// <value>
-                /// A pointer to the native texture object.
-                /// </value>
-                public IntPtr m_NativeTexture;
+                var result = new XRTextureDescriptor();
+                Convert(out result);
+                return result;
+            }
 
-                /// <summary>
-                /// Specifies the width dimension of the native texture object.
-                /// </summary>
-                /// <value>
-                /// The width of the native texture object.
-                /// </value>
-                public int m_Width;
-
-                /// <summary>
-                /// Specifies the height dimension of the native texture object.
-                /// </summary>
-                /// <value>
-                /// The height of the native texture object.
-                /// </value>
-                public int m_Height;
-
-                /// <summary>
-                /// Specifies the number of mipmap levels in the native texture object.
-                /// </summary>
-                /// <value>
-                /// The number of mipmap levels in the native texture object.
-                /// </value>
-                public int m_MipmapCount;
-
-                /// <summary>
-                /// Specifies the texture format of the native texture object.
-                /// </summary>
-                /// <value>
-                /// The format of the native texture object.
-                /// </value>
-                public TextureFormat m_Format;
-
-                /// <summary>
-                /// Specifies the unique shader property name ID for the material shader texture.
-                /// </summary>
-                /// <value>
-                /// The unique shader property name ID for the material shader texture.
-                /// </value>
-                /// <remarks>
-                /// Use the static method <c>Shader.PropertyToID(string name)</c> to get the unique identifier.
-                /// </remarks>
-                public int m_PropertyNameId;
-
-                /// <summary>
-                /// This specifies the depth dimension of the native texture. For a 3D texture, depth would be greater than zero.
-                /// For any other kind of valid texture, depth is one.
-                /// </summary>
-                /// <value>
-                /// The depth dimension of the native texture object.
-                /// </value>
-                public int m_Depth;
-
-                /// <summary>
-                /// Specifies the [texture dimension](https://docs.unity3d.com/ScriptReference/Rendering.TextureDimension.html) of the native texture object.
-                /// </summary>
-                /// <value>
-                /// The texture dimension of the native texture object.
-                /// </value>
-                public TextureDimension m_Dimension;
-
-                public unsafe XRTextureDescriptor Convert()
+            public unsafe void Convert(out XRTextureDescriptor target)
+            {
+                fixed (XRTextureDescriptor* targetPtr = &target)
+                fixed (XRTextureDescriptorMock* selfPtr = &this)
                 {
-                    var result = new XRTextureDescriptor();
-                    Convert(out result);
-                    return result;
-                }
-
-                public unsafe void Convert(out XRTextureDescriptor target)
-                {
-                    fixed (XRTextureDescriptor* targetPtr = &target)
-                    fixed (XRTextureDescriptorMock* selfPtr = &this)
-                    {
-                        UnsafeUtility.MemCpy(targetPtr, selfPtr, sizeof(XRTextureDescriptor));
-                    }
+                    UnsafeUtility.MemCpy(targetPtr, selfPtr, sizeof(XRTextureDescriptor));
                 }
             }
         }
