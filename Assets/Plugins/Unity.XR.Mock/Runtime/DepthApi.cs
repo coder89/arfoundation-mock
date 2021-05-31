@@ -89,6 +89,11 @@ namespace UnityEngine.XR.Mock
                 data.positions = positions;
                 data.confidenceValues = confidenceValues;
                 data.identifiers = identifiers;
+
+                if (!added.Contains(tmp) && !updated.Contains(tmp))
+                {
+                    updated.Add(tmp);
+                }
             }
             else
             {
