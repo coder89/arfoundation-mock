@@ -110,10 +110,8 @@ namespace UnityEngine.XR.Mock
 
         public static void reset()
         {
-            removed.AddRange(all.Values);
+            consumedChanges();
             all.Clear();
-            added.Clear();
-            updated.Clear();
             datas.Clear();
         }
 
