@@ -31,23 +31,44 @@ namespace UnityEngine.XR.Mock
 
             public override Promise<SessionAvailability> GetAvailabilityAsync() => new SessionAvailabilityPromise();
 
-            public override void Update(XRSessionUpdateParams updateParams)
+            public override void Start()
             {
-                if (this.trackingState == TrackingState.Limited && !this.isPaused)
-                {
-                    NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
-                }
+                NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
+
+                base.Start();
             }
+
+            public override void Stop()
+            {
+                NativeApi.UnityXRMock_setTrackingState(TrackingState.None);
+
+                base.Stop();
+            }
+
+            //public override void Update(XRSessionUpdateParams updateParams)
+            //{
+            //    if (this.trackingState == TrackingState.Limited && !this.isPaused)
+            //    {
+            //        NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
+            //    }
+            //
+            //    base.Update(updateParams);
+            //}
 
             public override void OnApplicationPause()
             {
                 this.isPaused = true;
-                NativeApi.UnityXRMock_setTrackingState(TrackingState.Limited);
+                NativeApi.UnityXRMock_setTrackingState(TrackingState.None);
+
+                base.OnApplicationPause();
             }
 
             public override void OnApplicationResume()
             {
+                NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
                 this.isPaused = false;
+
+                base.OnApplicationResume();
             }
 
             public override IntPtr nativePtr => IntPtr.Zero;
