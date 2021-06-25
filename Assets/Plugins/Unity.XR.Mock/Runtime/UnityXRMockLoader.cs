@@ -14,7 +14,7 @@ namespace UnityEngine.XR.Mock
         private static List<XRAnchorSubsystemDescriptor> s_AnchorSubsystemDescriptors = new List<XRAnchorSubsystemDescriptor>();
         private static List<XRRaycastSubsystemDescriptor> s_RaycastSubsystemDescriptors = new List<XRRaycastSubsystemDescriptor>();
 
-        public static bool IsActive { get; set; } = true;
+        public static bool IsPreferred { get; set; } = true;
 
         public XRSessionSubsystem sessionSubsystem => this.GetLoadedSubsystem<XRSessionSubsystem>();
         public XRCameraSubsystem cameraSubsystem => this.GetLoadedSubsystem<XRCameraSubsystem>();
@@ -32,7 +32,7 @@ namespace UnityEngine.XR.Mock
             Debug.unityLogger.Log("ar-mock", "Initializing UnityXRMock.");
 
 #if !UNITY_EDITOR
-            if (!IsActive) { return false; }
+            if (XRGeneralSettings.Instance?.Manager?.loaders?.Count < 2 && !IsActive) { return false; }
 #endif
 
             CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, typeof(UnityXRMockSessionSubsystem).FullName);
