@@ -32,7 +32,7 @@ namespace UnityEngine.XR.Mock
             Debug.unityLogger.Log("ar-mock", "Initializing UnityXRMock.");
 
 #if !UNITY_EDITOR
-            if (XRGeneralSettings.Instance?.Manager?.activeLoaders?.Count < 2 && !IsPreferred) { return false; }
+            if (XRGeneralSettings.Instance?.Manager?.activeLoaders?.Count > 1 && !IsPreferred) { return false; }
 #endif
 
             CreateSubsystem<XRSessionSubsystemDescriptor, XRSessionSubsystem>(s_SessionSubsystemDescriptors, typeof(UnityXRMockSessionSubsystem).FullName);
