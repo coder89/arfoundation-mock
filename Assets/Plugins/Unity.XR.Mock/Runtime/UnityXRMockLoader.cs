@@ -14,7 +14,7 @@ namespace UnityEngine.XR.Mock
         private static List<XRAnchorSubsystemDescriptor> s_AnchorSubsystemDescriptors = new List<XRAnchorSubsystemDescriptor>();
         private static List<XRRaycastSubsystemDescriptor> s_RaycastSubsystemDescriptors = new List<XRRaycastSubsystemDescriptor>();
 
-        public static bool IsPreferred { get; set; } = true;
+        public static bool IsPreferred { get; set; } = false;
 
         public XRSessionSubsystem sessionSubsystem => this.GetLoadedSubsystem<XRSessionSubsystem>();
         public XRCameraSubsystem cameraSubsystem => this.GetLoadedSubsystem<XRCameraSubsystem>();

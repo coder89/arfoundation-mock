@@ -50,17 +50,12 @@ namespace UnityEngine.XR.Mock
 
             public override PlaneDetectionMode currentPlaneDetectionMode => this._currentPlaneDetectionMode;
 
-            public override void GetBoundary(
-                TrackableId trackableId,
-                Allocator allocator,
-                ref NativeArray<Vector2> boundary)
+            public override void GetBoundary(TrackableId trackableId, Allocator allocator, ref NativeArray<Vector2> boundary)
             {
-                if (PlaneApi.planes.TryGetValue(trackableId, out PlaneApi.PlaneInfo planeInfo) &&
-                    planeInfo.boundaryPoints != null &&
-                    planeInfo.boundaryPoints.Length > 0)
+                if (PlaneApi.TryGetPlaneData(trackableId, out Vector2[] boundaryPoints))
                 {
-                    CreateOrResizeNativeArrayIfNecessary(planeInfo.boundaryPoints.Length, allocator, ref boundary);
-                    boundary.CopyFrom(planeInfo.boundaryPoints);
+                    CreateOrResizeNativeArrayIfNecessary(boundaryPoints.Length, allocator, ref boundary);
+                    boundary.CopyFrom(boundaryPoints);
                 }
                 else if (boundary.IsCreated)
                 {
@@ -68,29 +63,8 @@ namespace UnityEngine.XR.Mock
                 }
             }
 
-            public override TrackableChanges<BoundedPlane> GetChanges(
-                BoundedPlane defaultPlane,
-                Allocator allocator)
-            {
-                try
-                {
-                    T[] EfficientArray<T>(IEnumerable<PlaneApi.PlaneInfo> collection, Func<PlaneApi.PlaneInfo, T> converter)
-                        => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
-
-                    return TrackableChanges<BoundedPlane>.CopyFrom(
-                        new NativeArray<BoundedPlane>(
-                            EfficientArray(PlaneApi.addedPlanes, m => m.ToBoundedPlane(defaultPlane)), allocator),
-                        new NativeArray<BoundedPlane>(
-                            EfficientArray(PlaneApi.updatedPlanes, m => m.ToBoundedPlane(defaultPlane)), allocator),
-                        new NativeArray<TrackableId>(
-                            EfficientArray(PlaneApi.removedPlanes, m => m.id), allocator),
-                        allocator);
-                }
-                finally
-                {
-                    PlaneApi.ConsumedChanges();
-                }
-            }
+            public override TrackableChanges<BoundedPlane> GetChanges(BoundedPlane defaultPlane, Allocator allocator)
+                => PlaneApi.ConsumeChanges(defaultPlane, allocator);
         }
     }
 }

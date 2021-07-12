@@ -1,65 +1,124 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Collections;
 using UnityEngine.XR.ARSubsystems;
 
 namespace UnityEngine.XR.Mock
 {
     public static class AnchorApi
     {
-        private readonly static Dictionary<TrackableId, AnchorInfo> s_anchors = new Dictionary<TrackableId, AnchorInfo>();
-        private readonly static Dictionary<TrackableId, AnchorInfo> s_addedAnchors = new Dictionary<TrackableId, AnchorInfo>();
-        private readonly static Dictionary<TrackableId, AnchorInfo> s_updatedAnchors = new Dictionary<TrackableId, AnchorInfo>();
-        private readonly static Dictionary<TrackableId, AnchorInfo> s_removedAnchors = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static object stateLock = new object();
+        private readonly static Dictionary<TrackableId, AnchorInfo> all = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> added = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> updated = new Dictionary<TrackableId, AnchorInfo>();
+        private readonly static Dictionary<TrackableId, AnchorInfo> removed = new Dictionary<TrackableId, AnchorInfo>();
 
-        public static IDictionary<TrackableId, AnchorInfo> anchors => s_anchors;
-        public static IReadOnlyCollection<AnchorInfo> addedAnchors => s_addedAnchors.Values;
-        public static IReadOnlyCollection<AnchorInfo> updatedAnchors => s_updatedAnchors.Values;
-        public static IReadOnlyCollection<AnchorInfo> removedAnchors => s_removedAnchors.Values;
-
-        public static TrackableId Attach(Pose pose, TrackingState trackingState, Guid sessionId)
+        public static XRAnchor Attach(Pose pose, TrackingState trackingState, Guid sessionId)
         {
-            var trackableId = NativeApi.NewTrackableId();
-            return AttachInternal(trackableId, pose, TrackingState.Tracking, Guid.Empty);
+            lock (stateLock)
+            {
+                var trackableId = NativeApi.NewTrackableId();
+                AttachInternal(trackableId, pose, trackingState, sessionId);
+                return all[trackableId].ToXRAnchor(XRAnchor.defaultValue);
+            }
         }
 
         public static void Attach(TrackableId trackableId, Pose pose, TrackingState trackingState, Guid sessionId)
         {
-            AttachInternal(trackableId, pose, trackingState, sessionId);
+            lock (stateLock)
+            {
+                AttachInternal(trackableId, pose, trackingState, sessionId);
+            }
         }
 
         public static void Update(TrackableId trackableId, Pose pose, TrackingState trackingState)
         {
-            var anchorInfo = s_anchors[trackableId];
-            anchorInfo.pose = pose;
-            anchorInfo.trackingState = trackingState;
-            s_updatedAnchors[trackableId] = anchorInfo;
-        }
-
-        public static void Remove(TrackableId trackableId)
-        {
-            if (s_anchors.ContainsKey(trackableId))
+            lock (stateLock)
             {
-                if (!s_addedAnchors.Remove(trackableId))
-                {
-                    s_removedAnchors[trackableId] = s_anchors[trackableId];
-                }
-
-                s_anchors.Remove(trackableId);
-                s_updatedAnchors.Remove(trackableId);
+                var anchorInfo = all[trackableId];
+                anchorInfo.pose = pose;
+                anchorInfo.trackingState = trackingState;
+                updated[trackableId] = anchorInfo;
             }
         }
 
-        public static void ConsumedChanges()
+        public static bool Remove(TrackableId trackableId)
         {
-            s_addedAnchors.Clear();
-            s_updatedAnchors.Clear();
-            s_removedAnchors.Clear();
+            lock (stateLock)
+            {
+                if (all.ContainsKey(trackableId))
+                {
+                    if (!added.Remove(trackableId))
+                    {
+                        removed[trackableId] = all[trackableId];
+                    }
+
+                    all.Remove(trackableId);
+                    updated.Remove(trackableId);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public static void RemoveAll()
+        {
+            lock (stateLock)
+            {
+                foreach (var a in all)
+                {
+                    removed[a.Key] = a.Value;
+                }
+
+                all.Clear();
+                added.Clear();
+                updated.Clear();
+            }
+        }
+
+        public static TrackableChanges<XRAnchor> ConsumeChanges(XRAnchor defaultAnchor, Allocator allocator)
+        {
+            lock (stateLock)
+            {
+                try
+                {
+                    if (allocator != Allocator.None)
+                    {
+                        T[] EfficientArray<T>(IEnumerable<AnchorApi.AnchorInfo> collection, Func<AnchorApi.AnchorInfo, T> converter)
+                            => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
+
+                        return TrackableChanges<XRAnchor>.CopyFrom(
+                            new NativeArray<XRAnchor>(
+                                EfficientArray(AnchorApi.added.Values, m => m.ToXRAnchor(defaultAnchor)), allocator),
+                            new NativeArray<XRAnchor>(
+                                EfficientArray(AnchorApi.updated.Values, m => m.ToXRAnchor(defaultAnchor)), allocator),
+                            new NativeArray<TrackableId>(
+                                EfficientArray(AnchorApi.removed.Values, m => m.id), allocator),
+                            allocator);
+                    }
+                    else
+                    {
+                        return default;
+                    }
+                }
+                finally
+                {
+                    added.Clear();
+                    updated.Clear();
+                    removed.Clear();
+                }
+            }
         }
 
         public static void Reset()
         {
-            ConsumedChanges();
-            s_anchors.Clear();
+            lock (stateLock)
+            {
+                ConsumeChanges(default, Allocator.None);
+                all.Clear();
+            }
         }
 
         private static TrackableId AttachInternal(TrackableId trackableId, Pose pose, TrackingState trackingState, Guid sessionId)
@@ -69,24 +128,24 @@ namespace UnityEngine.XR.Mock
                 trackableId = NativeApi.NewTrackableId();
             }
 
-            if (!s_anchors.ContainsKey(trackableId) || s_addedAnchors.ContainsKey(trackableId))
+            if (!all.ContainsKey(trackableId) || added.ContainsKey(trackableId))
             {
-                if (!s_anchors.ContainsKey(trackableId))
+                if (!all.ContainsKey(trackableId))
                 {
-                    s_anchors[trackableId] = new AnchorInfo()
+                    all[trackableId] = new AnchorInfo()
                     {
                         id = trackableId
                     };
                 }
 
-                s_addedAnchors[trackableId] = s_anchors[trackableId];
+                added[trackableId] = all[trackableId];
             }
             else
             {
-                s_updatedAnchors[trackableId] = s_anchors[trackableId];
+                updated[trackableId] = all[trackableId];
             }
 
-            var anchorInfo = s_anchors[trackableId];
+            var anchorInfo = all[trackableId];
             anchorInfo.pose = pose;
             anchorInfo.trackingState = trackingState;
             anchorInfo.sessionId = sessionId;

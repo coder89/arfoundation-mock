@@ -1,22 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine.XR.ARSubsystems;
 
 namespace UnityEngine.XR.Mock
 {
     public static class PlaneApi
     {
-        private readonly static Dictionary<TrackableId, PlaneInfo> s_planes = new Dictionary<TrackableId, PlaneInfo>();
-        private readonly static Dictionary<TrackableId, PlaneInfo> s_addedPlanes = new Dictionary<TrackableId, PlaneInfo>();
-        private readonly static Dictionary<TrackableId, PlaneInfo> s_updatedPlanes = new Dictionary<TrackableId, PlaneInfo>();
-        private readonly static Dictionary<TrackableId, PlaneInfo> s_removedPlanes = new Dictionary<TrackableId, PlaneInfo>();
-        private readonly static Dictionary<TrackableId, TrackingState> s_TrackingStates = new Dictionary<TrackableId, TrackingState>();
-
-        public static IDictionary<TrackableId, PlaneInfo> planes => s_planes;
-        public static IEnumerable<PlaneInfo> addedPlanes => s_addedPlanes.Values;
-        public static IEnumerable<PlaneInfo> updatedPlanes => s_updatedPlanes.Values.OrderBy(m => m.subsumedById != TrackableId.invalidId);
-        public static IEnumerable<PlaneInfo> removedPlanes => s_removedPlanes.Values;
+        private readonly static object stateLock = new object();
+        private readonly static Dictionary<TrackableId, PlaneInfo> all = new Dictionary<TrackableId, PlaneInfo>();
+        private readonly static Dictionary<TrackableId, PlaneInfo> added = new Dictionary<TrackableId, PlaneInfo>();
+        private readonly static Dictionary<TrackableId, PlaneInfo> updated = new Dictionary<TrackableId, PlaneInfo>();
+        private readonly static Dictionary<TrackableId, PlaneInfo> removed = new Dictionary<TrackableId, PlaneInfo>();
+        private readonly static Dictionary<TrackableId, TrackingState> datas = new Dictionary<TrackableId, TrackingState>();
 
         public static TrackableId Add(
             Pose pose,
@@ -26,10 +23,13 @@ namespace UnityEngine.XR.Mock
             PlaneAlignment? alignment,
             PlaneClassification? classification)
         {
-            var planeId = NativeApi.NewTrackableId();
-            s_TrackingStates[planeId] = trackingState;
-            OnSetPlaneData(planeId, pose, center, size, null, trackingState, alignment, classification);
-            return planeId;
+            lock (stateLock)
+            {
+                var planeId = NativeApi.NewTrackableId();
+                datas[planeId] = trackingState;
+                OnSetPlaneData(planeId, pose, center, size, null, trackingState, alignment, classification);
+                return planeId;
+            }
         }
 
         public static void Update(
@@ -40,7 +40,10 @@ namespace UnityEngine.XR.Mock
             Vector2 center,
             Vector2 size)
         {
-            OnSetPlaneData(planeId, pose, center, size, null, s_TrackingStates[planeId], alignment, classification);
+            lock (stateLock)
+            {
+                OnSetPlaneData(planeId, pose, center, size, null, datas[planeId], alignment, classification);
+            }
         }
 
         public static TrackableId Add(
@@ -52,16 +55,19 @@ namespace UnityEngine.XR.Mock
             Vector3? center,
             Vector2? size)
         {
-            if (boundaryPoints == null)
-                throw new ArgumentNullException("boundaryPoints");
+            lock (stateLock)
+            {
+                if (boundaryPoints == null)
+                    throw new ArgumentNullException("boundaryPoints");
 
-            var planeId = NativeApi.UnityXRMock_createTrackableId(Guid.NewGuid());
-            return AddOrUpdate(planeId, TrackableId.invalidId, pose, boundaryPoints, trackingState, alignment, classification, center, size);
+                var planeId = NativeApi.UnityXRMock_createTrackableId(Guid.NewGuid());
+                return AddOrUpdate(planeId, TrackableId.invalidId, pose, boundaryPoints, trackingState, alignment, classification, center, size);
+            }
         }
 
         public static TrackableId AddOrUpdate(
             TrackableId planeId,
-            TrackableId subsumedById,
+            TrackableId? subsumedById,
             Pose pose,
             Vector2[] boundaryPoints,
             TrackingState trackingState,
@@ -70,98 +76,164 @@ namespace UnityEngine.XR.Mock
             Vector3? center,
             Vector2? size)
         {
-            if (boundaryPoints == null)
+            lock (stateLock)
             {
-                throw new ArgumentNullException("boundaryPoints");
+                if (boundaryPoints == null)
+                {
+                    throw new ArgumentNullException("boundaryPoints");
+                }
+
+                if (planeId == TrackableId.invalidId)
+                {
+                    planeId = NativeApi.NewTrackableId();
+                }
+
+                if (!datas.ContainsKey(planeId))
+                {
+                    datas[planeId] = trackingState;
+                }
+
+                SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
+
+                if (subsumedById.HasValue)
+                {
+                    OnSubsumedPlane(planeId, subsumedById.Value);
+                }
+
+                return planeId;
             }
-
-            if (planeId == TrackableId.invalidId)
-            {
-                planeId = NativeApi.NewTrackableId();
-            }
-
-            if (!s_TrackingStates.ContainsKey(planeId))
-            {
-                s_TrackingStates[planeId] = trackingState;
-            }
-
-            SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
-
-            if (subsumedById != TrackableId.invalidId)
-            {
-                OnSubsumedPlane(planeId, subsumedById);
-            }
-
-            return planeId;
         }
 
         public static void Merge(TrackableId planeId, TrackableId subsumedById)
         {
-            OnSubsumedPlane(planeId, subsumedById);
+            lock (stateLock)
+            {
+                OnSubsumedPlane(planeId, subsumedById);
+            }
         }
 
         public static void Update(TrackableId planeId, Pose pose, Vector2[] boundaryPoints, PlaneAlignment? alignment, PlaneClassification? classification, Vector3? center, Vector2? size)
         {
-            SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
+            lock (stateLock)
+            {
+                SetPlaneData(planeId, pose, boundaryPoints, alignment, classification, center, size);
+            }
         }
 
         public static void SetTrackingState(TrackableId planeId, TrackingState trackingState)
         {
-            if (!s_TrackingStates.ContainsKey(planeId))
-                return;
-
-            s_TrackingStates[planeId] = trackingState;
-
-            if (!s_planes.ContainsKey(planeId) || s_addedPlanes.ContainsKey(planeId))
+            lock (stateLock)
             {
-                if (!s_planes.ContainsKey(planeId))
+                if (!datas.ContainsKey(planeId))
+                    return;
+
+                datas[planeId] = trackingState;
+
+                if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
                 {
-                    s_planes[planeId] = new PlaneInfo();
+                    if (!all.ContainsKey(planeId))
+                    {
+                        all[planeId] = new PlaneInfo();
+                    }
+
+                    added[planeId] = all[planeId];
+                }
+                else
+                {
+                    updated[planeId] = all[planeId];
                 }
 
-                s_addedPlanes[planeId] = s_planes[planeId];
+                var planeInfo = all[planeId];
+                planeInfo.trackingState = trackingState;
             }
-            else
-            {
-                s_updatedPlanes[planeId] = s_planes[planeId];
-            }
-
-            var planeInfo = s_planes[planeId];
-            planeInfo.trackingState = trackingState;
         }
 
         public static bool TryGetTrackingState(TrackableId planeId, out TrackingState trackingState)
         {
-            return s_TrackingStates.TryGetValue(planeId, out trackingState);
+            lock (stateLock)
+            {
+                return datas.TryGetValue(planeId, out trackingState);
+            }
         }
 
         public static void Remove(TrackableId planeId)
         {
-            if (s_planes.ContainsKey(planeId))
+            lock (stateLock)
             {
-                if (!s_addedPlanes.Remove(planeId))
+                if (all.ContainsKey(planeId))
                 {
-                    s_removedPlanes[planeId] = s_planes[planeId];
+                    if (!added.Remove(planeId))
+                    {
+                        removed[planeId] = all[planeId];
+                    }
+
+                    all.Remove(planeId);
+                    updated.Remove(planeId);
                 }
 
-                s_planes.Remove(planeId);
-                s_updatedPlanes.Remove(planeId);
+                datas.Remove(planeId);
             }
-
-            s_TrackingStates.Remove(planeId);
         }
 
-        public static void ConsumedChanges()
+        public static void RemoveAll()
         {
-            s_addedPlanes.Clear();
-            s_updatedPlanes.Clear();
-            s_removedPlanes.Clear();
+            lock (stateLock)
+            {
+                added.Clear();
+                updated.Clear();
+                datas.Clear();
+
+                foreach (var p in all)
+                {
+                    removed[p.Key] = p.Value;
+                }
+
+                all.Clear();
+            }
+        }
+
+        public static TrackableChanges<BoundedPlane> ConsumeChanges(BoundedPlane defaultPlane, Allocator allocator)
+        {
+            lock (stateLock)
+            {
+                try
+                {
+                    if (allocator != Allocator.None)
+                    {
+                        T[] EfficientArray<T>(IEnumerable<PlaneApi.PlaneInfo> collection, Func<PlaneApi.PlaneInfo, T> converter)
+                            => collection.Any(m => true) ? collection.Select(converter).ToArray() : Array.Empty<T>();
+
+                        return TrackableChanges<BoundedPlane>.CopyFrom(
+                            new NativeArray<BoundedPlane>(
+                                EfficientArray(PlaneApi.added.Values, m => m.ToBoundedPlane(defaultPlane)), allocator),
+                            new NativeArray<BoundedPlane>(
+                                EfficientArray(PlaneApi.updated.Values, m => m.ToBoundedPlane(defaultPlane)), allocator),
+                            new NativeArray<TrackableId>(
+                                EfficientArray(PlaneApi.removed.Values, m => m.id), allocator),
+                            allocator);
+                    }
+                    else
+                    {
+                        return default;
+                    }
+                }
+                finally
+                {
+                    added.Clear();
+                    updated.Clear();
+                    removed.Clear();
+                }
+            }
         }
 
         public static void Reset()
         {
-            ConsumedChanges();
-            s_planes.Clear();
+            lock (stateLock)
+            {
+                ConsumeChanges(default, Allocator.None);
+                all.Clear();
+                datas.Clear();
+            }
         }
 
         private static Vector2 ComputeCenter(Vector2[] boundaryPoints)
@@ -188,7 +260,24 @@ namespace UnityEngine.XR.Mock
             var _center = center ?? ComputeCenter(boundaryPoints);
             var _size = size ?? ComputeSize(boundaryPoints);
 
-            OnSetPlaneData(planeId, pose, _center, _size, boundaryPoints, s_TrackingStates[planeId], alignment, classification);
+            OnSetPlaneData(planeId, pose, _center, _size, boundaryPoints, datas[planeId], alignment, classification);
+        }
+
+        public static bool TryGetPlaneData(TrackableId trackableId, out Vector2[] boundary)
+        {
+            lock (stateLock)
+            {
+                if (PlaneApi.all.TryGetValue(trackableId, out PlaneApi.PlaneInfo planeInfo) &&
+                    planeInfo.boundaryPoints != null &&
+                    planeInfo.boundaryPoints.Length > 0)
+                {
+                    boundary = planeInfo.boundaryPoints;
+                    return true;
+                }
+
+                boundary = null;
+                return false;
+            }
         }
 
         private static Vector2 ComputeSize(Vector2[] boundaryPoints)
@@ -218,24 +307,24 @@ namespace UnityEngine.XR.Mock
             PlaneAlignment? alignment,
             PlaneClassification? classification)
         {
-            if (!s_planes.ContainsKey(planeId) || s_addedPlanes.ContainsKey(planeId))
+            if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
             {
-                if (!s_planes.ContainsKey(planeId))
+                if (!all.ContainsKey(planeId))
                 {
-                    s_planes[planeId] = new PlaneInfo()
+                    all[planeId] = new PlaneInfo()
                     {
                         id = planeId
                     };
                 }
 
-                s_addedPlanes[planeId] = s_planes[planeId];
+                added[planeId] = all[planeId];
             }
             else
             {
-                s_updatedPlanes[planeId] = s_planes[planeId];
+                updated[planeId] = all[planeId];
             }
 
-            var planeInfo = s_planes[planeId];
+            var planeInfo = all[planeId];
             planeInfo.pose = pose;
             planeInfo.center = center;
             planeInfo.size = size;
@@ -247,24 +336,24 @@ namespace UnityEngine.XR.Mock
 
         private static void OnSubsumedPlane(TrackableId planeId, TrackableId subsumedById)
         {
-            if (!s_planes.ContainsKey(planeId) || s_addedPlanes.ContainsKey(planeId))
+            if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
             {
-                if (!s_planes.ContainsKey(planeId))
+                if (!all.ContainsKey(planeId))
                 {
-                    s_planes[planeId] = new PlaneInfo()
+                    all[planeId] = new PlaneInfo()
                     {
                         id = planeId
                     };
                 }
 
-                s_addedPlanes[planeId] = s_planes[planeId];
+                added[planeId] = all[planeId];
             }
             else
             {
-                s_updatedPlanes[planeId] = s_planes[planeId];
+                updated[planeId] = all[planeId];
             }
 
-            var planeInfo = s_planes[planeId];
+            var planeInfo = all[planeId];
             planeInfo.subsumedById = subsumedById;
         }
 

@@ -127,7 +127,7 @@ namespace UnityEngine.XR.Mock
 
             public override void Destroy()
             {
-                DepthApi.reset();
+                DepthApi.Reset();
             }
 
             public override HumanSegmentationDepthMode currentHumanDepthMode => requestedHumanDepthMode;
