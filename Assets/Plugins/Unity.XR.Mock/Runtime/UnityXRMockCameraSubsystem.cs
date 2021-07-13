@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -47,26 +48,16 @@ namespace UnityEngine.XR.Mock
             private Vector2? screenSize;
             private ScreenOrientation? screenOrientation;
             private Material m_CameraMaterial;
-            private Texture2D m_texture;
-            private static int count = 0;
 
             [Preserve]
             public MockProvider()
             {
-                if (count++ % 3 == 0)
-                {
-                    //m_CameraMaterial = CreateCameraMaterial("Unlit/ARKitBackground");
-                    m_texture = new Texture2D(100, 100, TextureFormat.ARGB32, false);
-
-                    for (int x = 0; x < 100; ++x)
-                        for (int y = 0; y < 100; ++y)
-                            m_texture.SetPixel(x, y, Color.red);
-
-                    m_texture.Apply();
-                }
+                m_CameraMaterial = CreateCameraMaterial("Unlit/Transparent");
             }
 
-            public override Material cameraMaterial => OcclusionApi.material;//  m_CameraMaterial;
+            // BUG: https://issuetracker.unity3d.com/issues/commandbuffer-native-plugin-events-hang-in-the-editor?_gl=1*2dhykv*_ga*MTk0OTU1NTU0NC4xNTg2OTI5MTgy*_ga_1S78EFL1W5*MTYyNjE2MDcyNS45Mi4xLjE2MjYxNjE4NDAuNjA.&_ga=2.177364768.441796193.1626072944-1949555544.1586929182
+            // Until this gets fixed -> camera background cannot be renderred in Editor as it hangs Unity when re-enterring Play Mode.
+            public override Material cameraMaterial => m_CameraMaterial;
 
             public override bool permissionGranted => CameraApi.permissionGranted;
 
@@ -84,14 +75,15 @@ namespace UnityEngine.XR.Mock
 
             public override void Destroy()
             {
+                CameraApi.Reset();
+                Object.Destroy(this.m_CameraMaterial);
                 base.Destroy();
             }
 
             public override bool TryGetFrame(XRCameraParams cameraParams, out XRCameraFrame cameraFrame)
             {
-                var timestamp = CameraApi.timestampNs;
                 if (this.cameraParams != cameraParams
-                    || this.timestamp != timestamp
+                    || this.timestamp != CameraApi.timestampNs
                     || this.screenSize != CameraApi.screenSize
                     || this.screenOrientation != CameraApi.screenOrientation)
                 {
@@ -154,8 +146,8 @@ namespace UnityEngine.XR.Mock
                     }
                     finally
                     {
-                        this.timestamp = timestamp;
                         this.cameraParams = cameraParams;
+                        this.timestamp = CameraApi.timestampNs;
                         this.screenSize = CameraApi.screenSize;
                         this.screenOrientation = CameraApi.screenOrientation;
                     }
@@ -167,35 +159,26 @@ namespace UnityEngine.XR.Mock
 
             public unsafe override NativeArray<XRTextureDescriptor> GetTextureDescriptors(XRTextureDescriptor defaultDescriptor, Allocator allocator)
             {
-                var array = new XRTextureDescriptor[] { defaultDescriptor };
-                fixed (void* arrayPtr = &array[0])
+                if (CameraApi.frameTextures != null)
                 {
-                    return NativeCopyUtility.PtrToNativeArrayWithDefault(
-                        defaultDescriptor,
-                        arrayPtr,
-                        sizeof(XRTextureDescriptor),
-                        array.Length,
+                    return new NativeArray<XRTextureDescriptor>(
+                        CameraApi.frameTextures
+                            .Select((m, i) => new XRTextureDescriptorMock()
+                            {
+                                m_NativeTexture = m.GetNativeTexturePtr(),
+                                m_PropertyNameId = Shader.PropertyToID("_MainTex"),
+                                m_Depth = 1,
+                                m_Dimension = m.dimension,
+                                m_Format = m.format,
+                                m_Width = m.width,
+                                m_Height = m.height,
+                                m_MipmapCount = m.mipmapCount
+                            }.Convert())
+                            .ToArray(),
                         allocator);
                 }
 
-                //return new NativeArray<XRTextureDescriptor>(
-                //    new XRTextureDescriptor[]
-                //    {
-                //        defaultDescriptor,
-                //        //new XRTextureDescriptorMock()
-                //        //{
-                //        //    m_NativeTexture = IntPtr.Zero,// m_texture.GetNativeTexturePtr(),
-                //        //    m_PropertyNameId = Shader.PropertyToID("_MainTex"),
-                //        //    m_Depth=1,
-                //        //    m_Dimension = m_texture.dimension,
-                //        //    m_Format = m_texture.format,
-                //        //    m_Width = m_texture.width,
-                //        //    m_Height = m_texture.height,
-                //        //    m_MipmapCount = m_texture.mipmapCount
-                //        //}.Convert()
-                //    }, allocator);
-
-                //  return base.GetTextureDescriptors(default, allocator);
+                return base.GetTextureDescriptors(default, allocator);
             }
 
             private void ResetState()
