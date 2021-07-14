@@ -22,10 +22,40 @@ namespace UnityEngine.XR.Mock
 
         private class MockProvider : Provider
         {
-            private bool isPaused = false;
+            private TrackingState? prevTrackingState;
+            private Guid m_sessionId;
 
             [Preserve]
-            public MockProvider() { }
+            public MockProvider()
+            {
+                this.m_sessionId = Guid.NewGuid();
+            }
+
+            public override Guid sessionId => this.m_sessionId;
+
+            public override Feature currentTrackingMode => Feature.AnyTrackingMode;
+
+            public override int frameRate => Mathf.RoundToInt(1.0f / Time.deltaTime);
+
+            public override IntPtr nativePtr => IntPtr.Zero;
+
+            public override Feature requestedFeatures
+                => Feature.AnyTrackingMode
+                | Feature.AnyCamera
+                | Feature.AnyLightEstimation
+                | Feature.EnvironmentDepth
+                | Feature.EnvironmentProbes
+                | Feature.MeshClassification
+                | Feature.PlaneTracking
+                | Feature.PointCloud;
+
+            public override Feature requestedTrackingMode
+            {
+                get => Feature.AnyTrackingMode;
+                set { }
+            }
+
+            public override TrackingState trackingState => SessionApi.trackingState;
 
             public override Promise<SessionInstallationStatus> InstallAsync() => new SessionInstallationPromise();
 
@@ -33,47 +63,34 @@ namespace UnityEngine.XR.Mock
 
             public override void Start()
             {
-                NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
-
+                SessionApi.Start();
                 base.Start();
             }
 
             public override void Stop()
             {
-                NativeApi.UnityXRMock_setTrackingState(TrackingState.None);
-
+                SessionApi.Stop();
                 base.Stop();
             }
 
-            //public override void Update(XRSessionUpdateParams updateParams)
-            //{
-            //    if (this.trackingState == TrackingState.Limited && !this.isPaused)
-            //    {
-            //        NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
-            //    }
-            //
-            //    base.Update(updateParams);
-            //}
+            public override void Destroy()
+            {
+                SessionApi.Reset();
+                base.Destroy();
+            }
 
             public override void OnApplicationPause()
             {
-                this.isPaused = true;
-                NativeApi.UnityXRMock_setTrackingState(TrackingState.None);
-
+                prevTrackingState = SessionApi.trackingState;
+                SessionApi.trackingState = TrackingState.None;
                 base.OnApplicationPause();
             }
 
             public override void OnApplicationResume()
             {
-                NativeApi.UnityXRMock_setTrackingState(TrackingState.Tracking);
-                this.isPaused = false;
-
+                SessionApi.trackingState = prevTrackingState ?? TrackingState.Tracking;
                 base.OnApplicationResume();
             }
-
-            public override IntPtr nativePtr => IntPtr.Zero;
-
-            public override TrackingState trackingState => NativeApi.UnityXRMock_getTrackingState();
         }
 
         private class SessionInstallationPromise : Promise<SessionInstallationStatus>

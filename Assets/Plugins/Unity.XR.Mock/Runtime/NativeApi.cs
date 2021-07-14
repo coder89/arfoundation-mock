@@ -110,19 +110,6 @@ namespace UnityEngine.XR.Mock
             return UnityXRMock_createTrackableId(Guid.NewGuid());
         }
 
-        private static TrackingState s_trackingState = TrackingState.Tracking;
-
-        public static TrackingState UnityXRMock_getTrackingState()
-        {
-            return s_trackingState;
-        }
-
-        public static void UnityXRMock_setTrackingState(
-            TrackingState trackingState)
-        {
-            s_trackingState = trackingState;
-        }
-
         private static Func<TrackableId> s_trackableIdGenerator;
 
         public static Func<TrackableId> UnityXRMock_getTrackableIdGenerator()
