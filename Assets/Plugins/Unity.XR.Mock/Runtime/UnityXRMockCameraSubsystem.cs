@@ -52,7 +52,7 @@ namespace UnityEngine.XR.Mock
             [Preserve]
             public MockProvider()
             {
-                m_CameraMaterial = CreateCameraMaterial("Unlit/Transparent");
+                m_CameraMaterial = CreateCameraMaterial("Unlit/Texture");
             }
 
             // BUG: https://issuetracker.unity3d.com/issues/commandbuffer-native-plugin-events-hang-in-the-editor?_gl=1*2dhykv*_ga*MTk0OTU1NTU0NC4xNTg2OTI5MTgy*_ga_1S78EFL1W5*MTYyNjE2MDcyNS45Mi4xLjE2MjYxNjE4NDAuNjA.&_ga=2.177364768.441796193.1626072944-1949555544.1586929182
