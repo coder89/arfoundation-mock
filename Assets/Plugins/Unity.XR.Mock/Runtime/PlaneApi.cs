@@ -127,21 +127,9 @@ namespace UnityEngine.XR.Mock
                 if (!datas.ContainsKey(planeId))
                     return;
 
+                EnsurePlaneCreated(planeId);
+
                 datas[planeId] = trackingState;
-
-                if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
-                {
-                    if (!all.ContainsKey(planeId))
-                    {
-                        all[planeId] = new PlaneInfo();
-                    }
-
-                    added[planeId] = all[planeId];
-                }
-                else
-                {
-                    updated[planeId] = all[planeId];
-                }
 
                 var planeInfo = all[planeId];
                 planeInfo.trackingState = trackingState;
@@ -307,22 +295,7 @@ namespace UnityEngine.XR.Mock
             PlaneAlignment? alignment,
             PlaneClassification? classification)
         {
-            if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
-            {
-                if (!all.ContainsKey(planeId))
-                {
-                    all[planeId] = new PlaneInfo()
-                    {
-                        id = planeId
-                    };
-                }
-
-                added[planeId] = all[planeId];
-            }
-            else
-            {
-                updated[planeId] = all[planeId];
-            }
+            EnsurePlaneCreated(planeId);
 
             var planeInfo = all[planeId];
             planeInfo.pose = pose;
@@ -336,25 +309,32 @@ namespace UnityEngine.XR.Mock
 
         private static void OnSubsumedPlane(TrackableId planeId, TrackableId subsumedById)
         {
-            if (!all.ContainsKey(planeId) || added.ContainsKey(planeId))
+            EnsurePlaneCreated(planeId);
+
+            var planeInfo = all[planeId];
+            planeInfo.subsumedById = subsumedById;
+        }
+
+        private static void EnsurePlaneCreated(TrackableId planeId)
+        {
+            if (!all.ContainsKey(planeId))
             {
-                if (!all.ContainsKey(planeId))
+                if (added.ContainsKey(planeId))
                 {
-                    all[planeId] = new PlaneInfo()
+                    all[planeId] = added[planeId];
+                }
+                else
+                {
+                    added[planeId] = all[planeId] = new PlaneInfo()
                     {
                         id = planeId
                     };
                 }
-
-                added[planeId] = all[planeId];
             }
-            else
+            else if (!added.ContainsKey(planeId))
             {
                 updated[planeId] = all[planeId];
             }
-
-            var planeInfo = all[planeId];
-            planeInfo.subsumedById = subsumedById;
         }
 
         public class PlaneInfo
