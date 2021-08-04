@@ -44,6 +44,8 @@ namespace UnityEngine.XR.Mock
         private class MockProvider : Provider
         {
             private XRCameraParams cameraParams;
+            private Feature m_lightEstimation = Feature.None;
+            private Feature m_currentCamera = Feature.None;
             private long? timestamp;
             private Vector2? screenSize;
             private ScreenOrientation? screenOrientation;
@@ -60,6 +62,22 @@ namespace UnityEngine.XR.Mock
             public override Material cameraMaterial => m_CameraMaterial;
 
             public override bool permissionGranted => CameraApi.permissionGranted;
+
+            public override Feature currentLightEstimation => this.m_lightEstimation;
+
+            public override Feature requestedLightEstimation
+            {
+                get => this.m_lightEstimation;
+                set => this.m_lightEstimation = value;
+            }
+
+            public override Feature currentCamera => this.m_currentCamera;
+
+            public override Feature requestedCamera
+            {
+                get => this.m_currentCamera;
+                set => this.m_currentCamera = value;
+            }
 
             public override void Start()
             {
