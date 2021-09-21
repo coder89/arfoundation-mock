@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.Management;
 
@@ -15,6 +17,21 @@ namespace UnityEngine.XR.Mock
         private static List<XRRaycastSubsystemDescriptor> s_RaycastSubsystemDescriptors = new List<XRRaycastSubsystemDescriptor>();
 
         public static bool IsPreferred { get; set; } = false;
+
+        public static bool HasAlternatives
+        {
+            get
+            {
+                var manager = XRGeneralSettings.Instance?.Manager;
+                if (manager?.activeLoaders.Count() == 1
+                    && manager.activeLoaders.Any(m => m.name.IndexOf("mock", StringComparison.InvariantCultureIgnoreCase) >= 0))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
         public XRSessionSubsystem sessionSubsystem => this.GetLoadedSubsystem<XRSessionSubsystem>();
         public XRCameraSubsystem cameraSubsystem => this.GetLoadedSubsystem<XRCameraSubsystem>();
