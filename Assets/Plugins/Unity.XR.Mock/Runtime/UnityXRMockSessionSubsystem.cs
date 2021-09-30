@@ -57,6 +57,8 @@ namespace UnityEngine.XR.Mock
 
             public override TrackingState trackingState => SessionApi.trackingState;
 
+            public override NotTrackingReason notTrackingReason => NotTrackingReason.None;
+
             public override Promise<SessionInstallationStatus> InstallAsync() => new SessionInstallationPromise();
 
             public override Promise<SessionAvailability> GetAvailabilityAsync() => new SessionAvailabilityPromise();
